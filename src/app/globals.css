@@ -176,3 +176,12 @@ body {
   html.has-custom-cursor, html.has-custom-cursor a, html.has-custom-cursor button { cursor: none; }
   html.has-custom-cursor input, html.has-custom-cursor textarea, html.has-custom-cursor select { cursor: text; }
 }
+
+/* ───────── Layout-variant helpers ───────── */
+@keyframes orbit { to { transform: rotate(360deg); } }
+@keyframes orbit-rev { to { transform: rotate(-360deg); } }
+@keyframes marquee-rev { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+.animate-marquee-rev { animation: marquee-rev 40s linear infinite; }
+.animate-marquee-rev:hover { animation-play-state: paused; }
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }

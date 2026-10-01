@@ -17,6 +17,8 @@ interface Row {
   showInNav: boolean;
   itemCount: number;
   hasItems: boolean;
+  layoutLabel: string;
+  layoutCount: number;
 }
 
 export function SectionsManager({ initial }: { initial: Row[] }) {
@@ -96,6 +98,11 @@ export function SectionsManager({ initial }: { initial: Row[] }) {
                 <p className="flex flex-wrap items-center gap-2">
                   <span className="font-display text-base font-semibold text-ink">{r.title}</span>
                   <span className="rounded-md bg-white/5 px-2 py-0.5 text-[11px] text-muted">{r.typeLabel}</span>
+                  {r.layoutLabel && (
+                    <span className="rounded-md border border-accent-2/30 bg-accent-2/10 px-2 py-0.5 text-[11px] text-accent-2" title={`${r.layoutCount} designs available`}>
+                      🎨 {r.layoutLabel}
+                    </span>
+                  )}
                   {r.hasItems && <span className="text-xs text-faint">{r.itemCount} entr{r.itemCount === 1 ? "y" : "ies"}</span>}
                 </p>
                 <p className="mt-0.5 truncate text-sm text-muted">{r.description}</p>

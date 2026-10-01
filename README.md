@@ -17,7 +17,7 @@
 [![SQLite / Turso](https://img.shields.io/badge/DB-SQLite%20%7C%20Turso-4FF8D2?logo=turso&logoColor=black)](https://turso.tech)
 [![License: MIT](https://img.shields.io/badge/License-MIT-violet.svg)](LICENSE)
 
-[**Features**](#-features) · [**Screenshots**](#-screenshots) · [**Quick start**](#-quick-start) · [**Use it for yourself**](#-use-this-portfolio-for-yourself) · [**Deploy**](#-deployment) · [**Admin guide**](#-admin-panel) · [**Roadmap**](#-roadmap)
+[**Features**](#-features) · [**Designs**](#-switchable-designs) · [**Screenshots**](#-screenshots) · [**Quick start**](#-quick-start) · [**Use it for yourself**](#-use-this-portfolio-for-yourself) · [**Deploy**](#-deployment) · [**Admin guide**](#-admin-panel) · [**Roadmap**](#-roadmap)
 
 </div>
 
@@ -27,9 +27,10 @@
 
 | | |
 |---|---|
-| **Version** | `v1.0.0` — Stage 1 (Foundation) ✅ |
+| **Version** | `v1.1.0` — Stage 1 + **switchable designs** ✅ |
 | **Content** | Demo / placeholder data (“Your Name”, generated artwork) — replace it from the admin panel |
-| **Quality** | TypeScript ✔ · ESLint ✔ · 20 unit tests ✔ · production build ✔ · responsive 320 px → 1920 px ✔ |
+| **Designs** | **43 layouts** across 13 sections — switch any section's design from the admin, preview before saving |
+| **Quality** | TypeScript ✔ · ESLint ✔ · 25 unit tests ✔ · production build ✔ · every layout checked at 390 / 768 / 1440 px ✔ |
 | **Next stage** | Stage 2 — personal content · Stage 3 — public launch (see [Roadmap](#-roadmap)) |
 
 > 📘 A 30‑page illustrated guide (architecture, workflows, every section's design + 6 alternatives, future ideas, prompts) lives at **[`docs/Portfolio-Project-Guide.pdf`](docs/Portfolio-Project-Guide.pdf)**.
@@ -55,6 +56,7 @@
 
 ### 🛠️ Full admin CMS
 - **Turn any section on/off**, reorder it, rename it, hide it from the menu
+- **Switch each section's design** — 43 layouts with visual picker & live preview
 - Add / edit / hide / feature / reorder / delete **entries** in every section
 - **Media library** — drag‑and‑drop photos & PDFs, automatic resize, alt text
 - **Messages inbox** for the contact form
@@ -104,6 +106,32 @@
 | 10 | **Testimonials** | Infinite marquee of quotes |
 | 11 | **Writing** | Article cards (Medium / LinkedIn / blog) |
 | 12 | **Contact** | Secure form → admin inbox · socials · availability badge |
+
+---
+
+## 🎨 Switchable designs
+
+Every section ships with **3–4 complete designs**. Pick one in **Admin → Sections & content → (section) → Design / layout** — the picker shows a real screenshot of each design, and **“Preview on site”** opens your live site with that design applied *only for you* before you save.
+
+<p align="center"><img src="docs/screenshots/admin-layout-picker.jpg" alt="Admin layout picker showing four project designs with thumbnails and preview links" width="85%" /></p>
+
+<table>
+<tr><th align="left" valign="middle">Hero</th><td align="center" width="25%"><img src="public/layouts/hero-classic.webp" alt="Hero — 3D holo card" width="200" /><br/><sub><b>3D holo card</b> ⭐ default</sub></td><td align="center" width="25%"><img src="public/layouts/hero-terminal.webp" alt="Hero — Terminal boot" width="200" /><br/><sub><b>Terminal boot</b></sub></td><td align="center" width="25%"><img src="public/layouts/hero-split.webp" alt="Hero — Split parallax" width="200" /><br/><sub><b>Split parallax</b></sub></td><td align="center" width="25%"><img src="public/layouts/hero-cinematic.webp" alt="Hero — Cinematic letterbox" width="200" /><br/><sub><b>Cinematic letterbox</b></sub></td></tr>
+<tr><th align="left" valign="middle">About</th><td align="center" width="25%"><img src="public/layouts/about-classic.webp" alt="About — Photo + story" width="200" /><br/><sub><b>Photo + story</b> ⭐ default</sub></td><td align="center" width="25%"><img src="public/layouts/about-bento.webp" alt="About — Bento grid" width="200" /><br/><sub><b>Bento grid</b></sub></td><td align="center" width="25%"><img src="public/layouts/about-chapters.webp" alt="About — Story chapters" width="200" /><br/><sub><b>Story chapters</b></sub></td><td></td></tr>
+<tr><th align="left" valign="middle">Education</th><td align="center" width="25%"><img src="public/layouts/education-classic.webp" alt="Education — Glowing timeline" width="200" /><br/><sub><b>Glowing timeline</b> ⭐ default</sub></td><td align="center" width="25%"><img src="public/layouts/education-ladder.webp" alt="Education — Level tracker" width="200" /><br/><sub><b>Level tracker</b></sub></td><td align="center" width="25%"><img src="public/layouts/education-list.webp" alt="Education — Minimal list" width="200" /><br/><sub><b>Minimal list</b></sub></td><td></td></tr>
+<tr><th align="left" valign="middle">Skills</th><td align="center" width="25%"><img src="public/layouts/skills-classic.webp" alt="Skills — 3D sphere + bars" width="200" /><br/><sub><b>3D sphere + bars</b> ⭐ default</sub></td><td align="center" width="25%"><img src="public/layouts/skills-marquee.webp" alt="Skills — Logo marquee" width="200" /><br/><sub><b>Logo marquee</b></sub></td><td align="center" width="25%"><img src="public/layouts/skills-radar.webp" alt="Skills — Radar chart" width="200" /><br/><sub><b>Radar chart</b></sub></td><td align="center" width="25%"><img src="public/layouts/skills-orbit.webp" alt="Skills — Orbit planets" width="200" /><br/><sub><b>Orbit planets</b></sub></td></tr>
+<tr><th align="left" valign="middle">Projects</th><td align="center" width="25%"><img src="public/layouts/projects-classic.webp" alt="Projects — Featured grid" width="200" /><br/><sub><b>Featured grid</b> ⭐ default</sub></td><td align="center" width="25%"><img src="public/layouts/projects-rows.webp" alt="Projects — Netflix rows" width="200" /><br/><sub><b>Netflix rows</b></sub></td><td align="center" width="25%"><img src="public/layouts/projects-stack.webp" alt="Projects — Scroll stack" width="200" /><br/><sub><b>Scroll stack</b></sub></td><td align="center" width="25%"><img src="public/layouts/projects-bento.webp" alt="Projects — Bento showcase" width="200" /><br/><sub><b>Bento showcase</b></sub></td></tr>
+<tr><th align="left" valign="middle">Experience</th><td align="center" width="25%"><img src="public/layouts/experience-classic.webp" alt="Experience — Cards" width="200" /><br/><sub><b>Cards</b> ⭐ default</sub></td><td align="center" width="25%"><img src="public/layouts/experience-timeline.webp" alt="Experience — Vertical timeline" width="200" /><br/><sub><b>Vertical timeline</b></sub></td><td align="center" width="25%"><img src="public/layouts/experience-tabs.webp" alt="Experience — Tabs by type" width="200" /><br/><sub><b>Tabs by type</b></sub></td><td></td></tr>
+<tr><th align="left" valign="middle">Certifications</th><td align="center" width="25%"><img src="public/layouts/certifications-classic.webp" alt="Certifications — Tilt cards" width="200" /><br/><sub><b>Tilt cards</b> ⭐ default</sub></td><td align="center" width="25%"><img src="public/layouts/certifications-badges.webp" alt="Certifications — Badge wall" width="200" /><br/><sub><b>Badge wall</b></sub></td><td align="center" width="25%"><img src="public/layouts/certifications-carousel.webp" alt="Certifications — Coverflow carousel" width="200" /><br/><sub><b>Coverflow carousel</b></sub></td><td></td></tr>
+<tr><th align="left" valign="middle">Achievements</th><td align="center" width="25%"><img src="public/layouts/achievements-classic.webp" alt="Achievements — Film reel" width="200" /><br/><sub><b>Film reel</b> ⭐ default</sub></td><td align="center" width="25%"><img src="public/layouts/achievements-podium.webp" alt="Achievements — Medal podium" width="200" /><br/><sub><b>Medal podium</b></sub></td><td align="center" width="25%"><img src="public/layouts/achievements-timeline.webp" alt="Achievements — Year timeline" width="200" /><br/><sub><b>Year timeline</b></sub></td><td></td></tr>
+<tr><th align="left" valign="middle">Gallery</th><td align="center" width="25%"><img src="public/layouts/gallery-ring.webp" alt="Gallery — 3D ring" width="200" /><br/><sub><b>3D ring</b> ⭐ default</sub></td><td align="center" width="25%"><img src="public/layouts/gallery-masonry.webp" alt="Gallery — Masonry grid" width="200" /><br/><sub><b>Masonry grid</b></sub></td><td align="center" width="25%"><img src="public/layouts/gallery-polaroid.webp" alt="Gallery — Polaroid scatter" width="200" /><br/><sub><b>Polaroid scatter</b></sub></td><td align="center" width="25%"><img src="public/layouts/gallery-filmstrip.webp" alt="Gallery — Film strip" width="200" /><br/><sub><b>Film strip</b></sub></td></tr>
+<tr><th align="left" valign="middle">Coming Soon</th><td align="center" width="25%"><img src="public/layouts/roadmap-classic.webp" alt="Coming Soon — Trailer cards" width="200" /><br/><sub><b>Trailer cards</b> ⭐ default</sub></td><td align="center" width="25%"><img src="public/layouts/roadmap-kanban.webp" alt="Coming Soon — Kanban board" width="200" /><br/><sub><b>Kanban board</b></sub></td><td align="center" width="25%"><img src="public/layouts/roadmap-gantt.webp" alt="Coming Soon — Timeline bars" width="200" /><br/><sub><b>Timeline bars</b></sub></td><td></td></tr>
+<tr><th align="left" valign="middle">Testimonials</th><td align="center" width="25%"><img src="public/layouts/testimonials-classic.webp" alt="Testimonials — Marquee" width="200" /><br/><sub><b>Marquee</b> ⭐ default</sub></td><td align="center" width="25%"><img src="public/layouts/testimonials-spotlight.webp" alt="Testimonials — Spotlight slider" width="200" /><br/><sub><b>Spotlight slider</b></sub></td><td align="center" width="25%"><img src="public/layouts/testimonials-wall.webp" alt="Testimonials — Wall of love" width="200" /><br/><sub><b>Wall of love</b></sub></td><td></td></tr>
+<tr><th align="left" valign="middle">Writing</th><td align="center" width="25%"><img src="public/layouts/blog-classic.webp" alt="Writing — Cards" width="200" /><br/><sub><b>Cards</b> ⭐ default</sub></td><td align="center" width="25%"><img src="public/layouts/blog-featured.webp" alt="Writing — Featured + list" width="200" /><br/><sub><b>Featured + list</b></sub></td><td align="center" width="25%"><img src="public/layouts/blog-list.webp" alt="Writing — Minimal list" width="200" /><br/><sub><b>Minimal list</b></sub></td><td></td></tr>
+<tr><th align="left" valign="middle">Contact</th><td align="center" width="25%"><img src="public/layouts/contact-classic.webp" alt="Contact — Form + details" width="200" /><br/><sub><b>Form + details</b> ⭐ default</sub></td><td align="center" width="25%"><img src="public/layouts/contact-minimal.webp" alt="Contact — Big email" width="200" /><br/><sub><b>Big email</b></sub></td><td align="center" width="25%"><img src="public/layouts/contact-cards.webp" alt="Contact — Contact cards" width="200" /><br/><sub><b>Contact cards</b></sub></td><td></td></tr>
+</table>
+
+**How it works:** the design catalogue lives in [`src/lib/layouts.ts`](src/lib/layouts.ts). The admin picker, server validation (only catalogue values are accepted) and the public renderer all read it, and visitors only download the code of the design you chose. Your content is shared by all designs — switching never loses data.
 
 ---
 
@@ -272,8 +300,8 @@ Anyone can download this project and turn it into their own portfolio.
 
 ```bash
 # a) Clone with Git
-git clone https://github.com/VinaySinghChaudhary1/cinematic-portfolio.git
-cd cinematic-portfolio
+git clone https://github.com/VinaySinghChaudhary1/my-cinematic-portfolio.git
+cd my-cinematic-portfolio
 ```
 
 - **b) Fork** — click **Fork** on GitHub to get your own copy, then clone your fork.
@@ -312,7 +340,7 @@ Start over any time with `npm run setup -- --reset` (content is reset; your admi
 git init -b main
 git add .
 git commit -m "feat: cinematic 3D portfolio with admin CMS (v1.0.0)"
-git remote add origin https://github.com/YOUR_GITHUB_USERNAME/cinematic-portfolio.git
+git remote add origin https://github.com/VinaySinghChaudhary1/my-cinematic-portfolio.git
 git push -u origin main
 ```
 
@@ -428,6 +456,7 @@ cinematic-portfolio/
 ### Extending
 
 - **Add a field** to a section → add it to that section in `src/lib/registry.ts`, then show it in `src/components/site/sections/<Section>.tsx`. The admin form and validation update automatically.
+- **Add a new design** for a section → add an entry to `src/lib/layouts.ts`, build the component in `src/components/site/sections/variants/`, register it in `SectionRenderer.tsx`, and add a thumbnail to `public/layouts/<section>-<layout>.webp`.
 - **Add a new section** → add a type to the registry, create its component, register it in `SectionRenderer.tsx`, add demo data in `src/db/seed-data.ts`.
 
 ---
@@ -451,10 +480,11 @@ Found a security issue? Please open a private security advisory on GitHub instea
 ## 🗺️ Roadmap
 
 - [x] **Stage 1 — Foundation:** cinematic site, 13 sections, admin CMS, security, error states, tests, docs
+- [x] **v1.1 — Switchable designs:** 43 layouts, visual picker with thumbnails, admin‑only live preview
 - [ ] **Stage 2 — Personalise:** real photos, bio, education, projects, certificates, privacy notice
 - [ ] **Stage 3 — Launch:** Turso + Vercel + Blob, custom domain, search indexing
 - [ ] **Stage 4 — Grow:** built‑in blog editor, GitHub/LeetCode stats, email alerts, analytics, two‑factor login
-- [ ] **Stage 5 — Future‑ready:** theme presets, per‑section layout switcher, 3D avatar, AI “ask me anything”, multi‑language
+- [ ] **Stage 5 — Future‑ready:** theme presets, 3D avatar, AI “ask me anything”, multi‑language
 
 See [`CHANGELOG.md`](CHANGELOG.md) for what changed in each version.
 

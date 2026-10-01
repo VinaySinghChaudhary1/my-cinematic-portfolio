@@ -6,6 +6,7 @@ import { Markdown } from "@/components/ui/Markdown";
 import { cn } from "@/lib/utils";
 import { MediaPicker } from "./MediaPicker";
 import { Switch, inputCls } from "./ui";
+import { LayoutPicker } from "./LayoutPicker";
 
 type Values = Record<string, unknown>;
 
@@ -165,6 +166,9 @@ export function FieldControl({ field, value, onChange, error, idPrefix }: { fiel
     case "date":
       control = <input {...common} type="month" value={String(value ?? "").slice(0, 7)} onChange={(e) => onChange(e.target.value)} className={cn(inputCls, "[color-scheme:dark]")} placeholder="YYYY-MM" />;
       break;
+    case "layout":
+      control = <LayoutPicker field={field} id={id} value={String(value ?? "")} onChange={onChange} />;
+      break;
     case "select":
       control = (
         <select {...common} value={String(value ?? "")} onChange={(e) => onChange(e.target.value)} className={cn(inputCls, "[color-scheme:dark]")}>
@@ -217,7 +221,7 @@ export function FieldControl({ field, value, onChange, error, idPrefix }: { fiel
   const isBool = field.type === "boolean";
   return (
     <div className={cn(isBool && "flex items-center justify-between gap-4 rounded-xl border border-line bg-black/20 px-4 py-3")}>
-      <label htmlFor={["image", "images", "file", "tags"].includes(field.type) ? undefined : id} className={cn("text-sm font-medium text-ink/90", !isBool && "mb-1.5 block")}>
+      <label id={`${id}-label`} htmlFor={["image", "images", "file", "tags", "layout"].includes(field.type) ? undefined : id} className={cn("text-sm font-medium text-ink/90", !isBool && "mb-1.5 block")}>
         {field.label}
         {field.required && <span className="ml-0.5 text-danger" aria-hidden>*</span>}
       </label>
@@ -249,7 +253,7 @@ export function DynamicForm({
   errors?: Record<string, string>;
   idPrefix: string;
 }) {
-  const full = (f: FieldDef) => ["textarea", "markdown", "images", "tags", "boolean"].includes(f.type);
+  const full = (f: FieldDef) => ["textarea", "markdown", "images", "tags", "boolean", "layout"].includes(f.type);
   return (
     <div className="grid gap-5 md:grid-cols-2">
       {fields.map((f) => (

@@ -12,7 +12,7 @@ const Portrait3D = dynamic(() => import("./HeroPortrait3D"), {
   loading: () => <div className="skeleton mx-auto aspect-[4/5] w-[70%]" aria-hidden />,
 });
 
-function Typing({ words }: { words: string[] }) {
+export function Typing({ words }: { words: string[] }) {
   const [i, setI] = useState(0);
   const [text, setText] = useState("");
   const [del, setDel] = useState(false);

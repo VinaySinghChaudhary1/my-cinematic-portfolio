@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { api, ApiError } from "./api";
 import { DynamicForm } from "./DynamicForm";
 import { Button, Card, Switch, inputCls } from "./ui";
+import { SectionFormContext } from "./LayoutPicker";
 
 type Data = Record<string, unknown>;
 interface Item {
@@ -384,7 +385,9 @@ export function SectionEditor({
           View on site <ExternalLink className="size-3.5" aria-hidden />
         </a>
       </div>
-      <SectionSettings section={section} fields={def.configFields} />
+      <SectionFormContext.Provider value={{ sectionKey: section.key, sectionType: section.type }}>
+        <SectionSettings section={section} fields={def.configFields} />
+      </SectionFormContext.Provider>
       {def.itemFields && <ItemsManager sectionKey={section.key} fields={def.itemFields} label={def.itemLabel ?? "Entry"} initial={items} isProjects={section.type === "projects"} />}
     </>
   );

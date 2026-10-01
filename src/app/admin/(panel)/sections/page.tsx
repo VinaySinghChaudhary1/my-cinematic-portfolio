@@ -2,6 +2,7 @@ import { getAllSections } from "@/lib/server/content";
 import { db, schema } from "@/db";
 import { count } from "drizzle-orm";
 import { getSectionType } from "@/lib/registry";
+import { layoutsFor, resolveLayout } from "@/lib/layouts";
 import { PageHeader } from "@/components/admin/ui";
 import { SectionsManager } from "@/components/admin/SectionsManager";
 
@@ -19,6 +20,8 @@ export default async function SectionsPage() {
     showInNav: s.showInNav,
     itemCount: map[s.key] ?? 0,
     hasItems: !!getSectionType(s.type)?.itemFields,
+    layoutLabel: layoutsFor(s.type).find((l) => l.value === resolveLayout(s.type, s.config.layout))?.label ?? "",
+    layoutCount: layoutsFor(s.type).length,
   }));
   return (
     <>

@@ -1,3 +1,5 @@
+import { layoutsFor } from "./layouts";
+
 /**
  * SECTION REGISTRY — the single source of truth for what every section can contain.
  *
@@ -20,14 +22,15 @@ export type FieldType =
   | "image"
   | "images"
   | "file"
-  | "color";
+  | "color"
+  | "layout";
 
 export interface FieldDef {
   name: string;
   label: string;
   type: FieldType;
   required?: boolean;
-  options?: { value: string; label: string }[];
+  options?: { value: string; label: string; description?: string; heavy?: boolean }[];
   help?: string;
   placeholder?: string;
   min?: number;
@@ -247,16 +250,8 @@ export const SECTION_TYPES: Record<string, SectionTypeDef> = {
       { name: "album", label: "Album", type: "text", secondary: true, maxLength: 60 },
       { name: "date", label: "Date", type: "date" },
     ],
-    configFields: [
-      {
-        name: "layout", label: "Layout", type: "select",
-        options: [
-          { value: "ring", label: "3D ring carousel" },
-          { value: "masonry", label: "Masonry grid" },
-        ],
-      },
-    ],
-    defaultConfig: { layout: "ring" },
+    configFields: [],
+    defaultConfig: {},
   },
   roadmap: {
     type: "roadmap",
@@ -335,6 +330,17 @@ export const SECTION_TYPES: Record<string, SectionTypeDef> = {
     defaultConfig: { heading: "Let's build something", text: "", showForm: true, showEmail: true, availability: "" },
   },
 };
+
+/* Every section gets a "Design / layout" picker as its first setting, built from the layout catalogue. */
+for (const def of Object.values(SECTION_TYPES)) {
+  const options = layoutsFor(def.type);
+  if (!options.length) continue;
+  def.configFields = [
+    { name: "layout", label: "Design / layout", type: "layout", required: true, options },
+    ...def.configFields.filter((f) => f.name !== "layout"),
+  ];
+  def.defaultConfig = { layout: options[0].value, ...def.defaultConfig };
+}
 
 export const SECTION_TYPE_LIST = Object.values(SECTION_TYPES);
 

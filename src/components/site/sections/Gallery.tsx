@@ -121,6 +121,48 @@ export function Gallery({ section, index }: SectionProps) {
         <Reveal>
           <Ring items={items} onOpen={setOpen} />
         </Reveal>
+      ) : layout === "polaroid" ? (
+        <div className="container-x">
+          <ul className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-4">
+            {items.map((it, i) => {
+              const rot = [-6, 4, -3, 7, -5, 2, 5, -4][i % 8];
+              return (
+                <Reveal as="li" key={it.id} delay={(i % 4) * 0.06}>
+                  <button
+                    onClick={() => setOpen(i)}
+                    aria-label={`Open photo: ${it.caption || i + 1}`}
+                    className="group block w-full bg-[#f6f3ea] p-2.5 pb-12 text-left shadow-[0_20px_40px_-12px_rgb(0_0_0/0.8)] transition duration-500 hover:z-10 hover:!rotate-0 hover:scale-105 motion-reduce:!rotate-0"
+                    style={{ transform: `rotate(${rot}deg)` }}
+                  >
+                    <img src={it.src} alt="" loading="lazy" className="aspect-square w-full object-cover" />
+                    <span className="mt-3 block truncate px-1 text-center font-[cursive] text-sm text-neutral-700">{it.caption}</span>
+                  </button>
+                </Reveal>
+              );
+            })}
+          </ul>
+        </div>
+      ) : layout === "filmstrip" ? (
+        <div className="space-y-5 [mask-image:linear-gradient(90deg,transparent,#000_6%,#000_94%,transparent)]">
+          {[items, [...items].reverse()].map((row, ri) => (
+            <div key={ri} className="relative bg-black py-6">
+              <div aria-hidden className="absolute inset-x-0 top-1.5 h-2.5 bg-[repeating-linear-gradient(90deg,#3a3656_0_12px,transparent_12px_24px)]" />
+              <div aria-hidden className="absolute inset-x-0 bottom-1.5 h-2.5 bg-[repeating-linear-gradient(90deg,#3a3656_0_12px,transparent_12px_24px)]" />
+              <ul className={`flex w-max gap-3 ${ri ? "animate-marquee-rev" : "animate-marquee"}`} style={{ animationDuration: `${Math.max(30, row.length * 6)}s` }}>
+                {[...row, ...row].map((it, k) => {
+                  const real = items.indexOf(it);
+                  return (
+                    <li key={`${it.id}-${k}`} aria-hidden={k >= row.length ? true : undefined}>
+                      <button onClick={() => setOpen(real)} tabIndex={k >= row.length ? -1 : 0} aria-label={`Open photo: ${it.caption || real + 1}`} className="group relative block h-40 w-60 overflow-hidden rounded-md sm:h-48 sm:w-72">
+                        <img src={it.src} alt="" loading="lazy" className="size-full object-cover grayscale-[40%] transition duration-500 group-hover:scale-105 group-hover:grayscale-0" />
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </div>
       ) : (
         <div className="container-x">
           <ul className="columns-2 gap-4 md:columns-3 [&>li]:mb-4">

@@ -60,6 +60,7 @@ function fieldSchema(f: FieldDef): z.ZodTypeAny {
       s = f.required ? n : z.union([z.literal(""), n]).transform((v) => (v === "" ? null : v)).nullable();
       break;
     }
+    case "layout":
     case "select": {
       const values = (f.options ?? []).map((o) => o.value) as [string, ...string[]];
       s = f.required ? z.enum(values) : z.union([z.literal(""), z.enum(values)]);
