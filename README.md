@@ -1,0 +1,477 @@
+<div align="center">
+
+<img src="docs/screenshots/hero.jpg" alt="Cinematic 3D Portfolio — hero section with a draggable 3D photo card over a particle galaxy" width="100%" />
+
+# 🌌 Cinematic 3D Portfolio + CMS
+
+**A dark sci‑fi, cinematic personal portfolio with an interactive 3D hero — and a secure admin panel to manage every section, photo, certificate and project from the browser.**
+
+*No code edits. No redeploys. Just log in and update.*
+
+[![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white)](https://nextjs.org)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Three.js](https://img.shields.io/badge/Three.js-R3F-000000?logo=threedotjs&logoColor=white)](https://threejs.org)
+[![GSAP](https://img.shields.io/badge/GSAP-ScrollTrigger-88CE02?logo=greensock&logoColor=black)](https://gsap.com)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![SQLite / Turso](https://img.shields.io/badge/DB-SQLite%20%7C%20Turso-4FF8D2?logo=turso&logoColor=black)](https://turso.tech)
+[![License: MIT](https://img.shields.io/badge/License-MIT-violet.svg)](LICENSE)
+
+[**Features**](#-features) · [**Screenshots**](#-screenshots) · [**Quick start**](#-quick-start) · [**Use it for yourself**](#-use-this-portfolio-for-yourself) · [**Deploy**](#-deployment) · [**Admin guide**](#-admin-panel) · [**Roadmap**](#-roadmap)
+
+</div>
+
+---
+
+## 📌 Project status
+
+| | |
+|---|---|
+| **Version** | `v1.0.0` — Stage 1 (Foundation) ✅ |
+| **Content** | Demo / placeholder data (“Your Name”, generated artwork) — replace it from the admin panel |
+| **Quality** | TypeScript ✔ · ESLint ✔ · 20 unit tests ✔ · production build ✔ · responsive 320 px → 1920 px ✔ |
+| **Next stage** | Stage 2 — personal content · Stage 3 — public launch (see [Roadmap](#-roadmap)) |
+
+> 📘 A 30‑page illustrated guide (architecture, workflows, every section's design + 6 alternatives, future ideas, prompts) lives at **[`docs/Portfolio-Project-Guide.pdf`](docs/Portfolio-Project-Guide.pdf)**.
+
+---
+
+## ✨ Features
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+### 🎬 Cinematic front‑end
+- **Interactive 3D hero** — drag/swipe to spin a holographic photo card (front + back photo), orbit rings, floating crystals, sparkles
+- **Particle galaxy background** (Three.js) that reacts to mouse & scroll
+- **Cinematic intro**, glow cursor, film grain, smooth scrolling (Lenis)
+- **Scroll storytelling** — GSAP pinned horizontal “film reel”, drawn timelines, animated counters
+- **3D skill sphere** & **3D gallery ring**, tilt‑and‑glare cards
+- Respects **reduced‑motion**; 3D is lazy‑loaded and lighter on phones
+
+</td>
+<td width="50%" valign="top">
+
+### 🛠️ Full admin CMS
+- **Turn any section on/off**, reorder it, rename it, hide it from the menu
+- Add / edit / hide / feature / reorder / delete **entries** in every section
+- **Media library** — drag‑and‑drop photos & PDFs, automatic resize, alt text
+- **Messages inbox** for the contact form
+- **Site settings** — profile, résumé, socials, accent colours, effects, SEO, maintenance mode, privacy notice
+- **Account security** — change password, sign out everywhere, activity log
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+### 🔐 Security built in
+- bcrypt passwords, **rate limiting** & account lockout
+- Signed, httpOnly session cookies — revocable at any time
+- **CSRF** origin checks, strict **nonce‑based CSP**
+- Uploads verified by file **bytes** (no SVG/HTML tricks)
+- Safe Markdown, link allow‑list, no open redirects
+
+</td>
+<td valign="top">
+
+### 🧭 Production‑ready UX
+- Custom **404**, **500**, **maintenance**, **offline** and **session‑expired** states
+- Empty states, “no results” with reset, loading & success feedback
+- Forms keep your input after errors
+- SEO: metadata, share image, JSON‑LD, sitemap, robots
+- Accessible: skip link, labels, focus rings, keyboard dialogs
+
+</td>
+</tr>
+</table>
+
+### 🧩 13 switchable sections
+
+| # | Section | Highlight |
+|:-:|---|---|
+| 0 | **Hero** | Draggable 3D portrait card · typing roles · CTA & résumé |
+| 1 | **About** | Tilt photo · Markdown bio · animated stat counters |
+| 2 | **Education** | Scroll‑drawn timeline · *Completed / Ongoing / Upcoming* |
+| 3 | **Skills** | Interactive 3D tag sphere · category tabs · proficiency bars |
+| 4 | **Projects** | Filters · search · featured layout · **case‑study page per project** |
+| 5 | **Experience** | Internships, clubs, volunteering, leadership |
+| 6 | **Certifications** | Image / PDF viewer · verify link · issuer filter |
+| 7 | **Achievements** | GSAP pinned **horizontal film reel** |
+| 8 | **Gallery** | Draggable **3D ring carousel** or masonry + lightbox |
+| 9 | **Coming Soon** | Upcoming education, future projects & goals with progress |
+| 10 | **Testimonials** | Infinite marquee of quotes |
+| 11 | **Writing** | Article cards (Medium / LinkedIn / blog) |
+| 12 | **Contact** | Secure form → admin inbox · socials · availability badge |
+
+---
+
+## 📸 Screenshots
+
+<div align="center">
+
+### The 3D hero — drag to spin
+<img src="docs/screenshots/hero-3d.gif" alt="Animated: the 3D photo card being dragged and spinning to show its back side" width="420" />
+
+</div>
+
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/about.jpg" alt="About section" /><p align="center"><b>About</b> — tilt photo, bio, animated counters</p></td>
+<td width="50%"><img src="docs/screenshots/education.jpg" alt="Education timeline" /><p align="center"><b>Education</b> — timeline with status badges</p></td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/skills.jpg" alt="Skills with 3D sphere" /><p align="center"><b>Skills</b> — 3D sphere + proficiency bars</p></td>
+<td><img src="docs/screenshots/projects.jpg" alt="Projects grid" /><p align="center"><b>Projects</b> — filters, search, featured card</p></td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/certifications.jpg" alt="Certifications" /><p align="center"><b>Certifications</b> — uploaded certificates</p></td>
+<td><img src="docs/screenshots/cert-viewer.jpg" alt="Certificate viewer dialog" /><p align="center"><b>Certificate viewer</b> — verify link & PDF</p></td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/achievements.jpg" alt="Achievements film reel" /><p align="center"><b>Achievements</b> — horizontal film reel</p></td>
+<td><img src="docs/screenshots/gallery.jpg" alt="3D gallery ring" /><p align="center"><b>Gallery</b> — draggable 3D ring</p></td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/roadmap.jpg" alt="Coming soon roadmap" /><p align="center"><b>Coming Soon</b> — future goals & progress</p></td>
+<td><img src="docs/screenshots/experience.jpg" alt="Experience" /><p align="center"><b>Experience</b> — internships & clubs</p></td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/testimonials.jpg" alt="Testimonials marquee" /><p align="center"><b>Testimonials</b> — marquee</p></td>
+<td><img src="docs/screenshots/blog.jpg" alt="Writing section" /><p align="center"><b>Writing</b> — article cards</p></td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/contact.jpg" alt="Contact form" /><p align="center"><b>Contact</b> — secure form → inbox</p></td>
+<td><img src="docs/screenshots/project-page.jpg" alt="Project case study page" /><p align="center"><b>Case‑study page</b> — <code>/projects/[slug]</code></p></td>
+</tr>
+</table>
+
+### 📱 Fully responsive
+
+<img src="docs/screenshots/mobile-showcase.jpg" alt="Six phone screenshots: hero, menu, education, projects, gallery, contact" width="100%" />
+
+Tested at **320, 375, 414, 768, 1024, 1280 and 1920 px** — no horizontal scrolling on any public or admin page.
+
+### 🛠️ Admin panel
+
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/admin-dashboard.jpg" alt="Admin dashboard" /><p align="center"><b>Dashboard</b> — stats & launch checklist</p></td>
+<td width="50%"><img src="docs/screenshots/admin-sections.jpg" alt="Sections manager" /><p align="center"><b>Sections</b> — on/off switches & ordering</p></td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/admin-entries.jpg" alt="Section entries list" /><p align="center"><b>Entries</b> — hide, feature, reorder, delete</p></td>
+<td><img src="docs/screenshots/admin-editor.jpg" alt="Entry editor" /><p align="center"><b>Editor</b> — forms generated automatically</p></td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/admin-media.jpg" alt="Media library" /><p align="center"><b>Media library</b> — drag & drop uploads</p></td>
+<td><img src="docs/screenshots/admin-settings.jpg" alt="Site settings" /><p align="center"><b>Settings</b> — profile, colours, SEO, maintenance</p></td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/admin-messages.jpg" alt="Messages inbox" /><p align="center"><b>Messages</b> — contact inbox</p></td>
+<td><img src="docs/screenshots/admin-account.jpg" alt="Account and security" /><p align="center"><b>Account</b> — password, sessions, activity log</p></td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/admin-login.jpg" alt="Admin sign-in" /><p align="center"><b>Sign‑in</b> — rate‑limited & lockout‑protected</p></td>
+<td><img src="docs/screenshots/404.jpg" alt="Custom 404 page" /><p align="center"><b>404</b> — custom “scene doesn't exist” page</p></td>
+</tr>
+</table>
+
+---
+
+## 🧰 Tech stack
+
+| Layer | Technology |
+|---|---|
+| Framework | **Next.js 16** (App Router, server rendering) · **React 19** · **TypeScript** |
+| Styling | **Tailwind CSS 4** · self‑hosted Space Grotesk, Inter, JetBrains Mono |
+| 3D & motion | **Three.js** · **React Three Fiber** · **drei** · **GSAP ScrollTrigger** · **Framer Motion** · **Lenis** |
+| Data | **Drizzle ORM** · **libSQL** — SQLite file locally, **Turso** in the cloud |
+| Auth & security | **bcrypt** · **jose** (signed JWT cookie) · **Zod** validation · nonce CSP |
+| File storage | Local disk (`data/uploads`) or **Vercel Blob** |
+| Quality | **Vitest** · **ESLint** · TypeScript strict |
+
+---
+
+## 🏗️ Architecture
+
+```mermaid
+flowchart LR
+    V["👀 Visitor<br/>phone · tablet · desktop"] --> P
+    A["🧑‍💻 You (admin)<br/>/admin"] --> P
+    P["proxy.ts<br/>CSP nonce · /admin guard"] --> N
+
+    subgraph N["Next.js 16 server — one app"]
+        S["Public site<br/>13 sections · SSR"]
+        C["Admin CMS<br/>forms from registry"]
+        API["API routes /api/*<br/>Zod · CSRF · rate limits"]
+        R["Section registry<br/>registry.ts"]
+    end
+
+    API --> DB[("Database<br/>SQLite file ⟷ Turso")]
+    S --> DB
+    API --> FS[("Files<br/>data/uploads ⟷ Vercel Blob")]
+    R -. defines fields .-> C
+    R -. validates .-> API
+    R -. renders .-> S
+```
+
+**How an edit goes live**
+
+```mermaid
+sequenceDiagram
+    participant You as You (browser)
+    participant UI as Admin UI
+    participant API as API route
+    participant DB as Database
+    You->>UI: Edit a project, click Save
+    UI->>API: PATCH /api/admin/items/:id
+    API->>API: Check origin (CSRF) + session
+    API->>API: Validate against registry (Zod)
+    API->>DB: UPDATE item + audit log
+    API-->>UI: 200 OK (or 400 + field errors)
+    UI-->>You: “Saved” toast — live on next page load
+```
+
+> 💡 **The section registry** (`src/lib/registry.ts`) defines every section's fields **once**. The admin form, the server validation and the public page all read it — add a field there and it appears everywhere.
+
+---
+
+## 🚀 Quick start
+
+### Prerequisites
+- **[Node.js 20.9+](https://nodejs.org)** (LTS recommended) — check with `node -v`
+- **Git** — <https://git-scm.com>
+- A code editor — **VS Code** recommended
+
+### Run it locally (3 commands)
+
+```bash
+npm install        # 1 · install dependencies
+npm run setup      # 2 · create database, demo content and your admin login
+npm run dev        # 3 · start the dev server
+```
+
+| Open | URL |
+|---|---|
+| 🌐 Website | <http://localhost:3000> |
+| 🔐 Admin panel | <http://localhost:3000/admin> |
+
+`npm run setup` **prints your admin email and a generated password** (also stored in the private, git‑ignored `.env.local`). Sign in, then change the password under **Account & security**.
+
+> ⚠️ **Windows + WSL users:** don't run the project from `/mnt/c/...` or `/mnt/d/...` inside WSL — file access there is very slow (installs and page compiles take minutes). Use a normal Windows terminal (PowerShell / VS Code), or keep the project inside your WSL home folder (`~/projects/...`).
+
+---
+
+## 🙋 Use this portfolio for yourself
+
+Anyone can download this project and turn it into their own portfolio.
+
+**1 · Get the code** — pick one:
+
+```bash
+# a) Clone with Git
+git clone https://github.com/VinaySinghChaudhary1/cinematic-portfolio.git
+cd cinematic-portfolio
+```
+
+- **b) Fork** — click **Fork** on GitHub to get your own copy, then clone your fork.
+- **c) Download ZIP** — **Code → Download ZIP** on GitHub, unzip, open the folder in VS Code.
+
+**2 · Install & set up**
+
+```bash
+npm install
+npm run setup
+npm run dev
+```
+
+> Want your own admin email from the start? Before `npm run setup`, copy `.env.example` to `.env.local` and set `ADMIN_EMAIL` and a strong `ADMIN_PASSWORD` (12+ characters, upper‑ and lower‑case letters and numbers).
+
+**3 · Make it yours — all from the browser** at `/admin`:
+
+1. **Site settings → Profile** — name, initials, headline, tagline, email, photo, résumé PDF
+2. **Site settings → Social links** — leave any field empty to hide its icon
+3. **Sections & content** — edit each section; switch off the ones you don't need yet
+4. **Hero → 3D portrait photos** — upload two vertical (4:5) photos for the front and back of the card
+5. **Site settings → Appearance** — accent colours and effects
+6. **Site settings → Privacy notice** — write your real details, then publish
+7. **Site settings → SEO** — turn on search indexing when you're ready to launch
+
+Start over any time with `npm run setup -- --reset` (content is reset; your admin account and uploads are kept).
+
+---
+
+## 🐙 First push to GitHub
+
+1. Create an **empty** repository at <https://github.com/new> (no README, no .gitignore — this project already has them).
+2. In the project folder run:
+
+```bash
+git init -b main
+git add .
+git commit -m "feat: cinematic 3D portfolio with admin CMS (v1.0.0)"
+git remote add origin https://github.com/YOUR_GITHUB_USERNAME/cinematic-portfolio.git
+git push -u origin main
+```
+
+`.gitignore` already keeps secrets and local data out of Git: `.env.local`, `data/*.db`, `data/uploads/`, `node_modules/` and `.next/` are never committed.
+
+---
+
+## ☁️ Deployment
+
+The app is a single Next.js server. It needs a **database** and **file storage** that survive restarts:
+
+| Host | Database | Uploads | Cost |
+|---|---|---|---|
+| **Vercel** ⭐ recommended | Turso (`libsql://…`) | Vercel Blob | Free tiers |
+| Render / Railway | SQLite on a persistent disk (or Turso) | `data/uploads` on the disk | Small monthly fee |
+| VPS / Docker | SQLite file | `data/uploads` | Your server |
+
+### Deploy to Vercel (step by step)
+
+1. **Push this repo to GitHub** (see [First push to GitHub](#-first-push-to-github)).
+2. **Create a database** at [turso.tech](https://turso.tech) → copy its URL (`libsql://…`) and create a token.
+3. **Seed the cloud database from your computer** — in `.env.local` set:
+   ```env
+   DATABASE_URL=libsql://your-db.turso.io
+   DATABASE_AUTH_TOKEN=your-token
+   ADMIN_EMAIL=you@example.com
+   ADMIN_PASSWORD=A-Strong-Password-2026
+   ```
+   then run `npm run setup`. This creates the tables, content and **your admin account** in the cloud.
+4. **Import the repo** at [vercel.com/new](https://vercel.com/new) and add these environment variables:
+
+   | Variable | Value |
+   |---|---|
+   | `DATABASE_URL` | your `libsql://…` URL |
+   | `DATABASE_AUTH_TOKEN` | your Turso token |
+   | `AUTH_SECRET` | a long random string (48+ characters) |
+   | `SITE_URL` | `https://your-project.vercel.app` (or your domain) |
+
+5. In the Vercel project: **Storage → Create → Blob** (adds `BLOB_READ_WRITE_TOKEN` automatically) → **Redeploy**.
+6. Open `https://your-project.vercel.app/admin`, sign in, and check `https://your-project.vercel.app/api/health` returns `{"ok":true}`.
+
+> ⚠️ Never use `DATABASE_URL=file:…` on Vercel — its disk is wiped on every deploy. On Vercel keep certificate PDFs under 4 MB (photos are compressed automatically).
+
+📄 Full guide for every host: **[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)**
+
+### Environment variables
+
+| Variable | Required | Description |
+|---|:-:|---|
+| `DATABASE_URL` | ✅ | `file:./data/portfolio.db` locally, `libsql://…` for Turso |
+| `DATABASE_AUTH_TOKEN` | cloud | Turso token |
+| `AUTH_SECRET` | ✅ prod | Secret used to sign sessions (setup generates one locally) |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | setup | First admin account, used only by `npm run setup` |
+| `BLOB_READ_WRITE_TOKEN` | Vercel | Enables Vercel Blob uploads |
+| `SITE_URL` | ✅ prod | Public URL, used for SEO, sitemap and secure cookies |
+
+---
+
+## 🔐 Admin panel
+
+| | |
+|---|---|
+| **Where** | `/admin` — e.g. <http://localhost:3000/admin> or `https://your-domain/admin` |
+| **Login button?** | Not shown publicly by default. Optional: *Site settings → Footer → Show a small “Admin” link* |
+| **Default password?** | None — `npm run setup` generates one and prints it (also in `.env.local`) |
+| **Forgot password** | `npm run admin:reset-password -- you@example.com "NewStrongPass2026"` |
+| **Sign out everywhere** | *Account & security → Sign out of all devices* |
+
+---
+
+## 📜 Scripts
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Development server with hot reload |
+| `npm run build` · `npm start` | Production build · production server |
+| `npm run setup` | Create database + demo content + admin account |
+| `npm run setup -- --reset` | Reset content to the demo data (keeps admin + uploads) |
+| `npm run admin:reset-password -- <email> "<password>"` | Reset the admin password offline |
+| `npm test` | Unit tests (Vitest) |
+| `npm run lint` · `npm run typecheck` | ESLint · TypeScript |
+
+---
+
+## 📁 Project structure
+
+```text
+cinematic-portfolio/
+├── src/
+│   ├── app/
+│   │   ├── (site)/              # public pages: home, projects/[slug], privacy
+│   │   ├── admin/               # login + dashboard, sections, media, messages, settings, account
+│   │   ├── api/                 # auth, admin CRUD, contact, health
+│   │   ├── media/[...path]/     # safe serving of local uploads
+│   │   └── layout.tsx · not-found.tsx · error.tsx · robots.ts · sitemap.ts
+│   ├── components/
+│   │   ├── site/                # navbar, footer, preloader, galaxy, cursor, sections/*
+│   │   ├── admin/               # admin shell, section editor, dynamic form, media picker…
+│   │   └── ui/                  # modal, markdown, states, social icons
+│   ├── lib/
+│   │   ├── registry.ts          # ★ section types & their fields
+│   │   ├── settings-def.ts      # ★ site settings groups
+│   │   ├── validation.ts        # Zod builders, URL safety
+│   │   └── server/              # auth, sessions, rate limiting, storage, content queries
+│   ├── db/                      # schema, migrations, demo seed data
+│   └── proxy.ts                 # security headers + admin guard
+├── scripts/                     # setup, reset-password, demo image generator
+├── public/demo/                 # placeholder artwork
+├── docs/                        # guide PDF, plan, deployment, audit, screenshots
+└── tests/                       # unit tests
+```
+
+### Extending
+
+- **Add a field** to a section → add it to that section in `src/lib/registry.ts`, then show it in `src/components/site/sections/<Section>.tsx`. The admin form and validation update automatically.
+- **Add a new section** → add a type to the registry, create its component, register it in `SectionRenderer.tsx`, add demo data in `src/db/seed-data.ts`.
+
+---
+
+## 🛡️ Security
+
+| Threat | Protection |
+|---|---|
+| Password guessing | bcrypt (cost 12), per‑IP & per‑email rate limits, 15‑minute lockout |
+| Account discovery | Identical errors and timing for unknown emails |
+| Session theft | httpOnly + SameSite cookies, Secure on HTTPS, revocable session version |
+| CSRF | Origin must match on every change request |
+| XSS | Nonce‑based Content‑Security‑Policy, Markdown without raw HTML, link allow‑list |
+| Malicious uploads | Type detected from bytes, SVG/HTML refused, size limits, sandboxed serving |
+| Spam | Honeypot, minimum fill time, 5 messages / hour / IP |
+
+Found a security issue? Please open a private security advisory on GitHub instead of a public issue.
+
+---
+
+## 🗺️ Roadmap
+
+- [x] **Stage 1 — Foundation:** cinematic site, 13 sections, admin CMS, security, error states, tests, docs
+- [ ] **Stage 2 — Personalise:** real photos, bio, education, projects, certificates, privacy notice
+- [ ] **Stage 3 — Launch:** Turso + Vercel + Blob, custom domain, search indexing
+- [ ] **Stage 4 — Grow:** built‑in blog editor, GitHub/LeetCode stats, email alerts, analytics, two‑factor login
+- [ ] **Stage 5 — Future‑ready:** theme presets, per‑section layout switcher, 3D avatar, AI “ask me anything”, multi‑language
+
+See [`CHANGELOG.md`](CHANGELOG.md) for what changed in each version.
+
+---
+
+## 🤝 Contributing
+
+Suggestions and improvements are welcome — see [`CONTRIBUTING.md`](CONTRIBUTING.md). Please run `npm run lint && npm run typecheck && npm test` before opening a pull request.
+
+## 📄 License
+
+Released under the [MIT License](LICENSE). Demo artwork in `public/demo/` is generated by `scripts/gen_demo_images.py` and free to reuse.
+
+<div align="center">
+
+**Built with ❤️, Next.js, Three.js and GSAP**
+
+⭐ If this project helps you, consider giving it a star!
+
+</div>

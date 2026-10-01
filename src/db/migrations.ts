@@ -1,0 +1,29 @@
+/** Plain SQL so the same bootstrap runs on local SQLite files and on Turso without extra tooling. */
+export const MIGRATIONS: string[] = [
+  `CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY, email TEXT NOT NULL UNIQUE, name TEXT NOT NULL DEFAULT 'Admin',
+    password_hash TEXT NOT NULL, session_version INTEGER NOT NULL DEFAULT 1,
+    failed_attempts INTEGER NOT NULL DEFAULT 0, locked_until INTEGER, last_login_at INTEGER,
+    created_at INTEGER NOT NULL)`,
+  `CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at INTEGER NOT NULL)`,
+  `CREATE TABLE IF NOT EXISTS sections (
+    key TEXT PRIMARY KEY, type TEXT NOT NULL, title TEXT NOT NULL, subtitle TEXT NOT NULL DEFAULT '',
+    enabled INTEGER NOT NULL DEFAULT 1, show_in_nav INTEGER NOT NULL DEFAULT 1, sort_order INTEGER NOT NULL DEFAULT 0,
+    config TEXT NOT NULL DEFAULT '{}', updated_at INTEGER NOT NULL)`,
+  `CREATE TABLE IF NOT EXISTS items (
+    id TEXT PRIMARY KEY, section_key TEXT NOT NULL, data TEXT NOT NULL,
+    visible INTEGER NOT NULL DEFAULT 1, featured INTEGER NOT NULL DEFAULT 0, sort_order INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL)`,
+  `CREATE INDEX IF NOT EXISTS items_section_idx ON items(section_key, sort_order)`,
+  `CREATE TABLE IF NOT EXISTS media (
+    id TEXT PRIMARY KEY, url TEXT NOT NULL, storage_key TEXT NOT NULL, filename TEXT NOT NULL,
+    mime TEXT NOT NULL, size INTEGER NOT NULL, alt TEXT NOT NULL DEFAULT '', folder TEXT NOT NULL DEFAULT 'general',
+    created_at INTEGER NOT NULL)`,
+  `CREATE TABLE IF NOT EXISTS messages (
+    id TEXT PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL, subject TEXT NOT NULL DEFAULT '',
+    body TEXT NOT NULL, read INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL)`,
+  `CREATE TABLE IF NOT EXISTS rate_limits (key TEXT PRIMARY KEY, count INTEGER NOT NULL, reset_at INTEGER NOT NULL)`,
+  `CREATE TABLE IF NOT EXISTS audit_log (
+    id TEXT PRIMARY KEY, user_id TEXT, action TEXT NOT NULL, detail TEXT NOT NULL DEFAULT '',
+    ip TEXT NOT NULL DEFAULT '', created_at INTEGER NOT NULL)`,
+];
