@@ -18,7 +18,7 @@ Thumbs.db
 content/backups/
 
 # backups made by npm run backup
-backups/
+/backups/
 
 # Personal data — never push (v1.4.2)
 data/
