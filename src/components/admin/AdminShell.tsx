@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Layers, Image as ImageIcon, Inbox, Settings, UserCog, LogOut, ExternalLink, Menu, X, Wrench } from "lucide-react";
+import { LayoutDashboard, Layers, Image as ImageIcon, Inbox, Settings, UserCog, LogOut, ExternalLink, Menu, X, Wrench, Archive, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +12,8 @@ const NAV = [
   { href: "/admin/media", label: "Media library", Icon: ImageIcon },
   { href: "/admin/messages", label: "Messages", Icon: Inbox },
   { href: "/admin/settings", label: "Site settings", Icon: Settings },
+  { href: "/admin/ai", label: "AI assistant", Icon: Sparkles },
+  { href: "/admin/backups", label: "Backups", Icon: Archive },
   { href: "/admin/account", label: "Account & security", Icon: UserCog },
 ];
 

@@ -11,6 +11,7 @@ export const DEMO_SETTINGS: Partial<SiteSettings> = {
   profile: {
     name: "Your Name",
     initials: "YN",
+    logo: "",
     headline: "BS Data Science & Applications · IIT Madras",
     tagline: "Student developer crafting data-driven products and cinematic web experiences.",
     email: "hello@example.com",

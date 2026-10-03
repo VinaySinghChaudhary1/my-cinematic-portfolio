@@ -82,3 +82,9 @@ export async function audit(userId: string | null, action: string, detail = "", 
     console.error("[audit] failed", e);
   }
 }
+
+/** Re-asks for the admin password before dangerous actions (download/restore backups). Rate-limited by the caller. */
+export async function verifyAdminPassword(user: UserRow, password: unknown): Promise<boolean> {
+  if (typeof password !== "string" || !password) return false;
+  return bcrypt.compare(password, user.passwordHash);
+}

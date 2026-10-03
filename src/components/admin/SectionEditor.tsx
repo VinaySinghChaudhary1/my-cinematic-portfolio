@@ -42,7 +42,7 @@ function blankItem(fields: FieldDef[]): Data {
   return d;
 }
 
-function SectionSettings({ section, fields }: { section: { key: string; title: string; subtitle: string; enabled: boolean; config: Data }; fields: FieldDef[] }) {
+function SectionSettings({ section, fields }: { section: { key: string; type: string; title: string; subtitle: string; enabled: boolean; config: Data }; fields: FieldDef[] }) {
   const router = useRouter();
   const [title, setTitle] = useState(section.title);
   const [subtitle, setSubtitle] = useState(section.subtitle);
@@ -99,7 +99,7 @@ function SectionSettings({ section, fields }: { section: { key: string; title: s
       </div>
       {fields.length > 0 && (
         <div className="mt-5">
-          <DynamicForm idPrefix="cfg" fields={fields} values={config} onChange={setConfig} errors={errors} />
+          <DynamicForm idPrefix="cfg" fields={fields} values={config} onChange={setConfig} errors={errors} ai={{ target: "config", sectionType: section.type, sectionTitle: section.title }} />
         </div>
       )}
       <div className="mt-6 flex items-center justify-end gap-3">
@@ -112,7 +112,7 @@ function SectionSettings({ section, fields }: { section: { key: string; title: s
   );
 }
 
-function ItemsManager({ sectionKey, fields, label, initial, isProjects }: { sectionKey: string; fields: FieldDef[]; label: string; initial: Item[]; isProjects: boolean }) {
+function ItemsManager({ sectionKey, sectionType, fields, label, initial, isProjects }: { sectionKey: string; sectionType: string; fields: FieldDef[]; label: string; initial: Item[]; isProjects: boolean }) {
   const router = useRouter();
   const [items, setItems] = useState(initial);
   const [editing, setEditing] = useState<{ id: string | null; data: Data; visible: boolean; featured: boolean } | null>(null);
@@ -314,7 +314,14 @@ function ItemsManager({ sectionKey, fields, label, initial, isProjects }: { sect
             }}
             className="p-5"
           >
-            <DynamicForm idPrefix="item" fields={fields} values={editing.data} onChange={(data) => setEditing({ ...editing, data })} errors={errors} />
+            <DynamicForm
+              idPrefix="item"
+              fields={fields}
+              values={editing.data}
+              onChange={(data) => setEditing({ ...editing, data })}
+              errors={errors}
+              ai={{ target: "item", sectionType, examples: items.filter((x) => x.id !== editing.id).slice(0, 2).map((x) => x.data) }}
+            />
             <div className="mt-6 flex flex-col gap-4 border-t border-line pt-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-wrap gap-5">
                 <label className="flex items-center gap-2 text-sm text-muted">
@@ -388,7 +395,7 @@ export function SectionEditor({
       <SectionFormContext.Provider value={{ sectionKey: section.key, sectionType: section.type }}>
         <SectionSettings section={section} fields={def.configFields} />
       </SectionFormContext.Provider>
-      {def.itemFields && <ItemsManager sectionKey={section.key} fields={def.itemFields} label={def.itemLabel ?? "Entry"} initial={items} isProjects={section.type === "projects"} />}
+      {def.itemFields && <ItemsManager sectionKey={section.key} sectionType={section.type} fields={def.itemFields} label={def.itemLabel ?? "Entry"} initial={items} isProjects={section.type === "projects"} />}
     </>
   );
 }

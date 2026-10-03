@@ -74,6 +74,8 @@ export const SECTION_TYPES: Record<string, SectionTypeDef> = {
       { name: "show3D", label: "Show interactive 3D portrait", type: "boolean" },
       { name: "portraitImages", label: "3D portrait photos", type: "images", help: "First photo is the front; second (optional) is shown on the back of the 3D card." },
       { name: "showScrollHint", label: "Show scroll hint", type: "boolean" },
+      { name: "backgroundVideo", label: "Background video (MP4)", type: "file", help: "Used by the Cinematic layout. Short, muted, ~1–3 MB. Falls back to the first portrait photo." },
+      { name: "videoPoster", label: "Video poster image", type: "image", help: "Shown while the video loads and for reduced-motion visitors." },
     ],
     defaultConfig: { greeting: "Hello, I'm", roles: [], primaryCtaLabel: "View my work", primaryCtaHref: "#projects", showResumeButton: true, show3D: true, portraitImages: [], showScrollHint: true },
   },

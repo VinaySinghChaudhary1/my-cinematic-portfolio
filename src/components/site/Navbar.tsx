@@ -9,7 +9,7 @@ export interface NavLink {
   title: string;
 }
 
-export function Navbar({ initials, name, links, resume, home = true }: { initials: string; name: string; links: NavLink[]; resume?: string; home?: boolean }) {
+export function Navbar({ initials, logo, name, links, resume, home = true }: { initials: string; logo?: string; name: string; links: NavLink[]; resume?: string; home?: boolean }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState<string>("");
@@ -59,9 +59,13 @@ export function Navbar({ initials, name, links, resume, home = true }: { initial
         )}
       >
         <Link href="/" className="group flex items-center gap-2" aria-label={`${name} — home`}>
-          <span className="relative grid size-10 place-items-center rounded-xl bg-gradient-to-br from-accent to-accent-2 font-display text-sm font-bold text-white shadow-[0_0_24px_-4px_var(--accent)]">
-            {initials}
-          </span>
+          {logo ? (
+            <img src={logo} alt="" width={40} height={40} className="size-10 rounded-xl shadow-[0_0_24px_-4px_var(--accent)] transition duration-500 group-hover:rotate-[8deg]" />
+          ) : (
+            <span className="relative grid size-10 place-items-center rounded-xl bg-gradient-to-br from-accent to-accent-2 font-display text-sm font-bold text-white shadow-[0_0_24px_-4px_var(--accent)]">
+              {initials}
+            </span>
+          )}
           <span className="hidden whitespace-nowrap font-display text-sm font-medium text-ink/90 sm:block">{name}</span>
         </Link>
 

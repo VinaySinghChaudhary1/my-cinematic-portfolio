@@ -27,6 +27,7 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
     fields: [
       { name: "name", label: "Full name", type: "text", required: true, maxLength: 80 },
       { name: "initials", label: "Logo initials", type: "text", maxLength: 4 },
+      { name: "logo", label: "Logo mark (square SVG/PNG)", type: "image", help: "Replaces the initials badge in the navbar. Leave empty to use initials." },
       { name: "headline", label: "Headline", type: "text", maxLength: 140, placeholder: "BS Data Science · IIT Madras" },
       { name: "tagline", label: "Tagline", type: "textarea", maxLength: 300 },
       { name: "email", label: "Public email", type: "email" },
@@ -110,7 +111,7 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
 ];
 
 export type SiteSettings = {
-  profile: { name: string; initials: string; headline: string; tagline: string; email: string; location: string; avatar: string; resume: string };
+  profile: { name: string; initials: string; logo: string; headline: string; tagline: string; email: string; location: string; avatar: string; resume: string };
   socials: Record<(typeof SOCIAL_PLATFORMS)[number], string>;
   appearance: { accent: string; accent2: string; preloader: boolean; background3D: boolean; customCursor: boolean; smoothScroll: boolean; filmGrain: boolean };
   seo: { title: string; description: string; keywords: string[]; ogImage: string; indexable: boolean };
@@ -120,7 +121,7 @@ export type SiteSettings = {
 };
 
 export const DEFAULT_SETTINGS: SiteSettings = {
-  profile: { name: "Your Name", initials: "YN", headline: "", tagline: "", email: "", location: "", avatar: "", resume: "" },
+  profile: { name: "Your Name", initials: "YN", logo: "", headline: "", tagline: "", email: "", location: "", avatar: "", resume: "" },
   socials: { github: "", linkedin: "", x: "", instagram: "", youtube: "", leetcode: "", kaggle: "", medium: "", website: "" },
   appearance: { accent: "#8b5cf6", accent2: "#22d3ee", preloader: true, background3D: true, customCursor: true, smoothScroll: true, filmGrain: true },
   seo: { title: "", description: "", keywords: [], ogImage: "", indexable: false },

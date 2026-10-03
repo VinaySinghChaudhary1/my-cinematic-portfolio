@@ -259,7 +259,20 @@ export function HeroCinematic(props: SectionProps) {
         animate={{ scale: 1.05, opacity: 1 }}
         transition={{ duration: 2.4, ease: [0.16, 1, 0.3, 1] }}
       >
-        <img src={photo} alt="" className="size-full object-cover object-top opacity-40 blur-[2px] grayscale-[30%]" />
+        {str(c.backgroundVideo) && !reduce ? (
+          <video
+            className="size-full object-cover object-[30%_20%] opacity-55"
+            src={str(c.backgroundVideo)}
+            poster={str(c.videoPoster) || photo}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+          />
+        ) : (
+          <img src={str(c.videoPoster) || photo} alt="" className="size-full object-cover object-top opacity-40 blur-[2px] grayscale-[30%]" />
+        )}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_10%,var(--color-bg)_75%)]" />
         <div className="absolute inset-0 bg-gradient-to-b from-bg/40 via-bg/30 to-bg" />
       </motion.div>

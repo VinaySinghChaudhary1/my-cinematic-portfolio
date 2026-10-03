@@ -1,0 +1,10 @@
+node_modules
+.next
+.git
+data
+content/backups
+.env*
+!.env.example
+docs/*.pdf
+*.zip
+backups

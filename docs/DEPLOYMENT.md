@@ -1,74 +1,128 @@
-# Deployment guide
+# Deployment guide — any host
 
-The app is a single Next.js server. It needs two things that survive restarts:
+The site is one Node.js (Next.js) server. It runs on **any host that runs Node.js 20+ or Docker**. It needs three things that survive restarts and redeploys:
 
-1. **A database** – SQLite file locally; on serverless hosts use **Turso** (free hosted SQLite/libSQL).
-2. **File storage for uploads** – the `data/uploads` folder on a normal server; **Vercel Blob** on Vercel.
+| Need | Option A: on the server's disk | Option B: cloud service (for hosts with a temporary disk) |
+|---|---|---|
+| **Database** | SQLite file in `DATA_DIR` | **Turso** / any libSQL URL (`DATABASE_URL=libsql://…`) |
+| **Uploads** (photos, PDFs) | `DATA_DIR/uploads` | **Vercel Blob** (`BLOB_READ_WRITE_TOKEN`) or any **S3-compatible** bucket — AWS S3, Cloudflare R2, Backblaze B2, DigitalOcean Spaces, MinIO (`S3_*`) |
+| **Backups** kept on the server | `DATA_DIR/private` (encrypted) | same Blob store / bucket (encrypted, `private/` prefix) |
 
-| Host | Database | Uploads | Cost |
-|---|---|---|---|
-| **Vercel** (recommended) | Turso (`libsql://…`) | Vercel Blob | Free tiers |
-| Render / Railway | SQLite file on a persistent disk, or Turso | `data/uploads` on the disk, or Vercel Blob | small monthly fee for a disk |
-| VPS / Docker | SQLite file | `data/uploads` | your server |
+The app picks the storage automatically (`STORAGE_DRIVER=auto`): Blob if `BLOB_READ_WRITE_TOKEN` is set, S3 if `S3_BUCKET` is set, otherwise the local disk.
 
-> ⚠️ Never deploy to Vercel with `DATABASE_URL=file:…` — Vercel's disk is wiped on every deploy, so content would be lost. The app logs a warning if you do.
+## Which host, which setup
 
----
+| Host | Database | Files | Scheduled backups | How |
+|---|---|---|---|---|
+| **Vercel** | Turso | Vercel Blob | Vercel Cron (built in, `vercel.json`) | [A](#a-vercel) |
+| **VPS** (Hostinger VPS, DigitalOcean, AWS EC2, Hetzner, Oracle Cloud…) | SQLite file | disk | built-in timer | [B](#b-vps-hostinger-vps-any-linux-server) |
+| **Docker** (Coolify, Dokploy, Portainer, any VPS) | SQLite in a volume | volume | built-in timer | [C](#c-docker) |
+| **Hostinger Node.js web app** (Business / Cloud plans) | SQLite outside the build folder, or Turso | disk outside the build folder, or R2/S3 | built-in timer | [D](#d-hostinger-nodejs-web-app) |
+| **Render / Railway / Fly.io** | SQLite on a persistent disk, or Turso | disk, or R2/S3 | built-in timer | [E](#e-render-railway-flyio) |
+| **Netlify / other serverless** | Turso | R2/S3 or Blob | external cron → `/api/cron/backup` | [F](#f-serverless-hosts-other-than-vercel) |
 
-## A. Vercel + Turso + Vercel Blob (recommended)
+> **No shell on the host?** No problem. On first start the app creates its tables, adds demo content and creates the admin account from `ADMIN_EMAIL` / `ADMIN_PASSWORD`. Then sign in and use **Admin → Backups → Restore from a file** to load your real site.
 
-1. **Push the project to GitHub** (private repo is fine). `.env.local` and `data/` are git‑ignored — never commit them.
-2. **Create the database** at [turso.tech](https://turso.tech): create a database → copy its **URL** (`libsql://…`) and create a **token**.
-3. **Seed it from your computer** – edit `.env.local`:
-   ```env
-   DATABASE_URL=libsql://your-db-name.turso.io
-   DATABASE_AUTH_TOKEN=your-token
-   ```
-   then run `npm run setup`. This creates the tables, your content (demo or yours) and the admin account in the cloud DB.
-   *(Tip: keep a copy of your local `DATABASE_URL=file:./data/portfolio.db` line commented out to switch back.)*
-4. **Import the repo in Vercel** → Add **Environment Variables**:
-   | Name | Value |
-   |---|---|
-   | `DATABASE_URL` | your `libsql://…` URL |
-   | `DATABASE_AUTH_TOKEN` | your Turso token |
-   | `AUTH_SECRET` | a long random string (copy from `.env.local` or generate a new one) |
-   | `SITE_URL` | `https://your-domain.vercel.app` (your final domain) |
-5. **Storage → Create → Blob** in the Vercel project. Vercel adds `BLOB_READ_WRITE_TOKEN` automatically. Redeploy.
-6. Visit `/admin`, sign in, and **change your password**.
-7. When the content is real: Admin → Site settings → SEO → enable *Allow search engines*.
+## Environment variables
 
-**Limits on Vercel:** request bodies are capped at ~4.5 MB. Photos are compressed in the browser before upload, so they fit; keep certificate **PDFs under 4 MB**.
-
-### Custom domain
-Vercel → Project → Settings → Domains → add `yourname.com` and follow the DNS steps. Update `SITE_URL`.
+| Variable | Needed | What it does |
+|---|---|---|
+| `AUTH_SECRET` | **always** | 32+ random characters. Signs logins and encrypts server-side backup copies. Keep it the same forever (or set `BACKUP_SECRET`). |
+| `SITE_URL` | always | Your public address, e.g. `https://vinaysinghchaudhary.me` |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | first start | Creates the first admin if none exists (password: 12+ chars, upper, lower, digit). |
+| `DATABASE_URL`, `DATABASE_AUTH_TOKEN` | optional | Default `file:$DATA_DIR/portfolio.db`. Use `libsql://…` + token for Turso. |
+| `DATA_DIR` | optional | Folder for the database file, uploads and backups. Default `./data`. **Must survive redeploys.** |
+| `BLOB_READ_WRITE_TOKEN` | Vercel | Files in Vercel Blob. |
+| `S3_BUCKET`, `S3_ENDPOINT`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_PUBLIC_URL` | optional | Files in any S3-compatible bucket. `S3_PUBLIC_URL` = the public base URL of the bucket (R2 public domain or CDN). `S3_FORCE_PATH_STYLE=false` for virtual-hosted-style URLs. |
+| `STORAGE_DRIVER` | optional | Force `local`, `blob` or `s3`. |
+| `CRON_SECRET` | for cron triggers | 16+ random characters. Required for `/api/cron/backup` (Vercel Cron sends it automatically). |
+| `BACKUP_SECRET` | optional | Separate key for encrypting server-side backup copies, so changing `AUTH_SECRET` doesn't affect them. |
+| `BACKUP_SCHEDULER` | optional | `off` disables the built-in timer (use an external cron instead). |
+| `SEED_DEMO_CONTENT` | optional | `false` = start empty instead of with demo content. |
 
 ---
 
-## B. Render / Railway (one Node server with a disk)
+## A. Vercel
 
-- Build command: `npm install && npm run build`
-- Start command: `npm start`
-- Attach a **persistent disk** mounted at `/opt/render/project/src/data` (Render) or the app's `data` folder (Railway).
-- Env vars: `DATABASE_URL=file:./data/portfolio.db`, `AUTH_SECRET=…`, `SITE_URL=https://…`, plus `ADMIN_EMAIL` / `ADMIN_PASSWORD` for the first setup.
-- Run `npm run setup` once from the host's shell.
+1. Push the repo to GitHub and **import it in Vercel**.
+2. **Database:** create a free database at [turso.tech](https://turso.tech) → set `DATABASE_URL` (`libsql://…`) and `DATABASE_AUTH_TOKEN`.
+3. **Files:** Vercel project → Storage → Create → **Blob** (adds `BLOB_READ_WRITE_TOKEN`).
+4. Set `AUTH_SECRET`, `SITE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `CRON_SECRET`. Deploy.
+5. Sign in at `/admin` → **Backups → Restore from a file** (or run `npm run content:apply` locally against Turso).
+6. Scheduled backups: turn them on in **Admin → Backups**. `vercel.json` already calls `/api/cron/backup` once a day.
 
-## C. VPS / Docker
+Vercel limits each request/response to about 4.5 MB — backups are uploaded and downloaded in 4 MB parts, so this never matters.
+
+## B. VPS (Hostinger VPS, any Linux server)
 
 ```bash
-git clone <your repo> portfolio && cd portfolio
-npm ci && npm run setup && npm run build
-PORT=3000 npm start          # keep alive with pm2 or systemd; put Nginx/Caddy in front for HTTPS
+# once
+git clone https://github.com/VinaySinghChaudhary1/my-cinematic-portfolio.git portfolio && cd portfolio
+cp .env.example .env.production   # fill AUTH_SECRET, SITE_URL, ADMIN_EMAIL, ADMIN_PASSWORD, DATA_DIR=/var/lib/portfolio
+npm ci && npm run build
+# run (keep alive with pm2 or systemd)
+npx pm2 start "npm start" --name portfolio && npx pm2 save
 ```
-Back up `data/portfolio.db` and `data/uploads/` regularly.
+
+- Put **Nginx or Caddy** in front for HTTPS (Caddy: `your-domain { reverse_proxy localhost:3000 }`).
+- Keep `DATA_DIR` **outside the project folder** (e.g. `/var/lib/portfolio`) so `git pull` and rebuilds never touch your data.
+- Update: `git pull && npm ci && npm run build && npx pm2 restart portfolio` — **take a backup first** (Admin → Backups).
+
+## C. Docker
+
+```bash
+cp .env.example .env.production    # fill it in (DATA_DIR is set to /app/data inside the image)
+docker compose up -d               # builds the image, keeps data in the "portfolio-data" volume
+```
+
+The image runs as a non-root user, has a health check (`/api/health`) and stores everything in the `/app/data` volume. Back up the volume or use Admin → Backups.
+
+## D. Hostinger Node.js web app
+
+Hostinger Business and Cloud plans can run Node.js apps from GitHub or a ZIP upload ([Hostinger guide](https://www.hostinger.com/support/how-to-deploy-a-nodejs-website-in-hostinger)). Files inside the build folder (`hbuilds/…`) and `public_html` are **overwritten on every deploy**, so:
+
+1. Deploy from GitHub; framework **Next.js**, build `npm run build`, start `npm start`.
+2. Environment variables: `AUTH_SECRET`, `SITE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and **`DATA_DIR=/home/<your-user>/portfolio-data`** (a folder outside the build directory).
+   Safer alternative: Turso for the database and Cloudflare R2 (S3) for files — then nothing depends on the disk.
+3. Open the site → `/admin` → restore your backup.
+4. Scheduled backups run from the built-in timer. If the app sleeps when idle, also add the GitHub Actions trigger (below).
+
+## E. Render / Railway / Fly.io
+
+- Build `npm ci && npm run build`, start `npm start`.
+- Attach a **persistent disk/volume** and set `DATA_DIR` to its mount path (e.g. `/var/data`). Without a disk, use Turso + R2/S3.
+
+## F. Serverless hosts other than Vercel
+
+Use Turso + S3/R2 (`isEphemeral` hosts refuse to write files to their temporary disk and show a warning). Trigger scheduled backups from outside — see next section.
 
 ---
 
-## Pre‑launch checklist
+## Scheduled backups — three ways to trigger them
 
-- [ ] Strong `AUTH_SECRET` set in the host (not the dev default)
-- [ ] Admin password changed from the generated one
-- [ ] Demo content replaced (dashboard checklist shows ✔)
-- [ ] Privacy notice written with real details and published (the contact form collects names & emails)
-- [ ] `SITE_URL` set to the real domain; search indexing enabled
+The schedule (daily / weekly / monthly, how many to keep, what to include) is set in **Admin → Backups → Automatic backups**. Something just has to "knock" regularly; the site only makes a backup when one is due, and a database lock prevents duplicates.
+
+1. **Built-in timer** — long-running servers (VPS, Docker, Hostinger, Render, Railway). Nothing to set up.
+2. **Vercel Cron** — `vercel.json` calls `/api/cron/backup` daily with your `CRON_SECRET`.
+3. **Any external cron** — `curl -H "Authorization: Bearer $CRON_SECRET" https://your-site/api/cron/backup`
+   - GitHub Actions: `.github/workflows/scheduled-backup.yml` is included — add repo secrets `SITE_URL` and `CRON_SECRET`.
+   - Linux crontab: `17 3 * * * curl -fsS -H "Authorization: Bearer XXX" https://your-site/api/cron/backup`
+   - cron-job.org or similar.
+
+Server-side backup copies live on the same host. **Download one now and then** (Admin → Backups → Download, password-protected) and keep it somewhere else — that is your protection if the host itself is lost.
+
+## Moving to another host
+
+1. Old site: Admin → Backups → Create backup → **Download** (with password).
+2. New host: deploy the code (any section above) with `ADMIN_EMAIL` / `ADMIN_PASSWORD`.
+3. New site: Admin → Backups → **Restore from a file** → enter the password → preview → Restore.
+   Uploaded files are re-uploaded to the new storage and every link in your content is updated automatically.
+
+## Pre-launch checklist
+
+- [ ] Strong `AUTH_SECRET` (and optional `BACKUP_SECRET`) set — never the dev default
+- [ ] `DATA_DIR` (or Turso + Blob/S3) survives a redeploy — test: upload a photo, redeploy, check it's still there
+- [ ] Admin password changed after first login
+- [ ] First full backup downloaded and stored off the server
+- [ ] Privacy notice published; `SITE_URL` = real domain; search indexing enabled
 - [ ] `/api/health` returns `{"ok":true}`
-- [ ] Upload a test photo and PDF in production and view them on the site

@@ -29,7 +29,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
           Maintenance mode is ON — only you can see the site.
         </div>
       )}
-      <Navbar initials={settings.profile.initials || settings.profile.name.slice(0, 2)} name={settings.profile.name} links={navLinks(sections)} resume={settings.profile.resume} />
+      <Navbar initials={settings.profile.initials || settings.profile.name.slice(0, 2)} logo={settings.profile.logo} name={settings.profile.name} links={navLinks(sections)} resume={settings.profile.resume} />
       <main id="main" className="relative">
         {children}
       </main>

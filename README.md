@@ -17,7 +17,7 @@
 [![SQLite / Turso](https://img.shields.io/badge/DB-SQLite%20%7C%20Turso-4FF8D2?logo=turso&logoColor=black)](https://turso.tech)
 [![License: MIT](https://img.shields.io/badge/License-MIT-violet.svg)](LICENSE)
 
-[**Features**](#-features) · [**Designs**](#-switchable-designs) · [**Screenshots**](#-screenshots) · [**Quick start**](#-quick-start) · [**Use it for yourself**](#-use-this-portfolio-for-yourself) · [**Deploy**](#-deployment) · [**Admin guide**](#-admin-panel) · [**Roadmap**](#-roadmap)
+[**Features**](#-features) · [**Designs**](#-switchable-designs) · [**Screenshots**](#-screenshots) · [**Quick start**](#-quick-start) · [**Use it for yourself**](#-use-this-portfolio-for-yourself) · [**Deploy**](#-deployment) · [**AI**](#-ai-assistant) · [**Backups**](#-backups) · [**Admin guide**](#-admin-panel) · [**Roadmap**](#-roadmap)
 
 </div>
 
@@ -27,11 +27,11 @@
 
 | | |
 |---|---|
-| **Version** | `v1.1.0` — Stage 1 + **switchable designs** ✅ |
-| **Content** | Demo / placeholder data (“Your Name”, generated artwork) — replace it from the admin panel |
+| **Version** | `v1.4.2` — personal content · Backup & Restore · deploy anywhere · **AI assistant** (Claude / Gemini / OpenAI / OpenRouter & any OpenAI-compatible, your own keys, automatic fallback) ✅ |
+| **Content** | Live content of Vinay Singh Chaudhary in [`content/vinay.json`](content/vinay.json) (`npm run content:apply`). New users still start from neutral demo data with `npm run setup`. |
 | **Designs** | **43 layouts** across 13 sections — switch any section's design from the admin, preview before saving |
-| **Quality** | TypeScript ✔ · ESLint ✔ · 25 unit tests ✔ · production build ✔ · every layout checked at 390 / 768 / 1440 px ✔ |
-| **Next stage** | Stage 2 — personal content · Stage 3 — public launch (see [Roadmap](#-roadmap)) |
+| **Quality** | TypeScript ✔ · ESLint ✔ · 55 unit tests ✔ (incl. backup → restore → undo, AI adapters & safety) · production build ✔ · every layout checked at 390 / 768 / 1440 px ✔ |
+| **Next stage** | v1.5 — AI bulk import from résumé/LinkedIn · then public launch (see [Roadmap](#-roadmap)) |
 
 > 📘 A 30‑page illustrated guide (architecture, workflows, every section's design + 6 alternatives, future ideas, prompts) lives at **[`docs/Portfolio-Project-Guide.pdf`](docs/Portfolio-Project-Guide.pdf)**.
 
@@ -329,6 +329,26 @@ npm run dev
 
 Start over any time with `npm run setup -- --reset` (content is reset; your admin account and uploads are kept).
 
+**Prefer files over clicking?** Put your whole site in one JSON file (see [`content/README.md`](content/README.md)), keep your images in `public/me/`, and run:
+
+```bash
+npm run content:check   # validate the file + check every image exists
+npm run content:apply   # back up the current content, then apply the file
+```
+
+---
+
+## 👤 Personal content (this site)
+
+| File | Purpose |
+|---|---|
+| [`content/vinay.json`](content/vinay.json) | Every section, item, design choice and profile setting of the live site |
+| [`content/README.md`](content/README.md) | How the content file works, field reference, local vs. live (Turso) |
+| [`content/UPDATE_REQUEST.md`](content/UPDATE_REQUEST.md) | Fill‑in template for future updates — send it to Claude with new files |
+| [`content/BRAND.md`](content/BRAND.md) | 4 logo options, headline/tagline alternatives, colours |
+| `public/me/` | Photos, hero video, certificates, generated project covers, logos, résumé |
+| `scripts/art/generate-art.py` | Regenerates project covers, achievement tiles, journey cards and the share image |
+
 ---
 
 ## 🐙 First push to GitHub
@@ -350,52 +370,59 @@ git push -u origin main
 
 ## ☁️ Deployment
 
-The app is a single Next.js server. It needs a **database** and **file storage** that survive restarts:
+Runs on **any host with Node.js 20+ or Docker** — the same code picks the right database and file storage from environment variables, and creates its tables, demo content and admin account on first start (no shell needed).
 
-| Host | Database | Uploads | Cost |
+| Host | Database | Files | Scheduled backups |
 |---|---|---|---|
-| **Vercel** ⭐ recommended | Turso (`libsql://…`) | Vercel Blob | Free tiers |
-| Render / Railway | SQLite on a persistent disk (or Turso) | `data/uploads` on the disk | Small monthly fee |
-| VPS / Docker | SQLite file | `data/uploads` | Your server |
+| **Vercel** | Turso | Vercel Blob | Vercel Cron (`vercel.json`) |
+| **VPS** — Hostinger VPS, DigitalOcean, EC2, Hetzner… | SQLite in `DATA_DIR` | disk | built-in timer |
+| **Docker** — `docker compose up -d` | SQLite in a volume | volume | built-in timer |
+| **Hostinger Node.js web app** | SQLite in `DATA_DIR` outside the build folder, or Turso | disk, or Cloudflare R2 / S3 | built-in timer |
+| **Render / Railway / Fly.io** | SQLite on a persistent disk, or Turso | disk, or R2 / S3 | built-in timer |
+| **Netlify / other serverless** | Turso | R2 / S3 / Blob | GitHub Actions or any cron → `/api/cron/backup` |
 
-### Deploy to Vercel (step by step)
+📄 Step-by-step for every host, all environment variables and "moving to another host": **[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)**
 
-1. **Push this repo to GitHub** (see [First push to GitHub](#-first-push-to-github)).
-2. **Create a database** at [turso.tech](https://turso.tech) → copy its URL (`libsql://…`) and create a token.
-3. **Seed the cloud database from your computer** — in `.env.local` set:
-   ```env
-   DATABASE_URL=libsql://your-db.turso.io
-   DATABASE_AUTH_TOKEN=your-token
-   ADMIN_EMAIL=you@example.com
-   ADMIN_PASSWORD=A-Strong-Password-2026
-   ```
-   then run `npm run setup`. This creates the tables, content and **your admin account** in the cloud.
-4. **Import the repo** at [vercel.com/new](https://vercel.com/new) and add these environment variables:
+### Quick Vercel deploy
 
-   | Variable | Value |
-   |---|---|
-   | `DATABASE_URL` | your `libsql://…` URL |
-   | `DATABASE_AUTH_TOKEN` | your Turso token |
-   | `AUTH_SECRET` | a long random string (48+ characters) |
-   | `SITE_URL` | `https://your-project.vercel.app` (or your domain) |
+1. Import the repo at [vercel.com/new](https://vercel.com/new).
+2. Create a [Turso](https://turso.tech) database → set `DATABASE_URL` + `DATABASE_AUTH_TOKEN`.
+3. Vercel → Storage → **Blob** (adds `BLOB_READ_WRITE_TOKEN`).
+4. Set `AUTH_SECRET` (48+ random chars), `SITE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `CRON_SECRET` → Deploy.
+5. Sign in at `/admin` → **Backups → Restore from a file** to load your content.
 
-5. In the Vercel project: **Storage → Create → Blob** (adds `BLOB_READ_WRITE_TOKEN` automatically) → **Redeploy**.
-6. Open `https://your-project.vercel.app/admin`, sign in, and check `https://your-project.vercel.app/api/health` returns `{"ok":true}`.
+---
 
-> ⚠️ Never use `DATABASE_URL=file:…` on Vercel — its disk is wiped on every deploy. On Vercel keep certificate PDFs under 4 MB (photos are compressed automatically).
+## ✨ AI assistant
 
-📄 Full guide for every host: **[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)**
+Connect **Claude, Gemini, OpenAI** and as many **OpenAI-compatible** services as you like (OpenRouter, Groq, Together, Ollama…) with your own API keys in **Admin → AI assistant**:
 
-### Environment variables
+- **✨ Fill with AI** on every form — rough notes, pasted text, a certificate PDF or a screenshot → correctly formatted fields you review and tick
+- **✨ AI** on long text — write, improve, make professional, shorten, expand, fix grammar, or your own instruction
+- **✨ Generate** on image fields — logos & icons (vector, any provider), covers & artwork (Gemini / OpenAI image models) in your site's colours
+- **Order & automatic fallback** — when one provider is out of credit or busy, the next one takes over; or pick a provider per request in each dialog
+- Any current or future model name works; **Load models** lists what your key can use
+- No in-app spending cap — when your key's limit is exhausted you see the provider's own message
+- Keys encrypted at rest, never shown again, never in backups; every AI answer is re-validated like manual input
 
-| Variable | Required | Description |
-|---|:-:|---|
-| `DATABASE_URL` | ✅ | `file:./data/portfolio.db` locally, `libsql://…` for Turso |
-| `DATABASE_AUTH_TOKEN` | cloud | Turso token |
-| `AUTH_SECRET` | ✅ prod | Secret used to sign sessions (setup generates one locally) |
-| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | setup | First admin account, used only by `npm run setup` |
-| `BLOB_READ_WRITE_TOKEN` | Vercel | Enables Vercel Blob uploads |
-| `SITE_URL` | ✅ prod | Public URL, used for SEO, sitemap and secure cookies |
+📄 Guide: **[`docs/AI-ASSISTANT.md`](docs/AI-ASSISTANT.md)**
+
+---
+
+## 💾 Backups
+
+**Admin → Backups** saves the whole website in one file — every section, item and chosen design, site settings, uploaded media, the bundled photos/video/certificates, and (optionally) contact messages and the activity log.
+
+- **Choose what to include** — all or some sections, settings, media, site files, messages, activity log
+- **Password-protected downloads** (AES-256-GCM, on by default) — downloads/uploads go in 4 MB parts, so they work on every host
+- **Restore from a file or from history** — every file is checksum-verified, then you see a **preview** (items now vs. in the backup) and choose: all sections or only some, settings, media, messages
+- **Safe by design** — admin password + typing `RESTORE`, maintenance mode while it runs, one database transaction, automatic **snapshot first → one-click Undo**
+- **Moves between hosts** — files are re-uploaded to the new storage and every link in the content is rewritten
+- **Automatic backups (optional)** — daily / weekly / monthly, keep the last *N*; triggered by the built-in timer, Vercel Cron or any cron URL
+- **Command line** — `npm run backup [-- --password "…"]` · `npm run restore -- file.zip [--password "…"] --yes`
+- Never included: password hashes, `AUTH_SECRET`, `.env` values
+
+<p align="center"><img src="docs/screenshots/admin-backups.webp" alt="Admin → Backups page" width="820"></p>
 
 ---
 
@@ -419,6 +446,8 @@ The app is a single Next.js server. It needs a **database** and **file storage**
 | `npm run build` · `npm start` | Production build · production server |
 | `npm run setup` | Create database + demo content + admin account |
 | `npm run setup -- --reset` | Reset content to the demo data (keeps admin + uploads) |
+| `npm run content:check` · `content:apply` · `content:export` | Validate · apply · back up the JSON content file |
+| `npm run backup` · `npm run restore -- <file>` | Full-site backup to `backups/` · preview / restore a backup file (`--yes` to apply) |
 | `npm run admin:reset-password -- <email> "<password>"` | Reset the admin password offline |
 | `npm test` | Unit tests (Vitest) |
 | `npm run lint` · `npm run typecheck` | ESLint · TypeScript |
@@ -481,8 +510,11 @@ Found a security issue? Please open a private security advisory on GitHub instea
 
 - [x] **Stage 1 — Foundation:** cinematic site, 13 sections, admin CMS, security, error states, tests, docs
 - [x] **v1.1 — Switchable designs:** 43 layouts, visual picker with thumbnails, admin‑only live preview
-- [ ] **Stage 2 — Personalise:** real photos, bio, education, projects, certificates, privacy notice
-- [ ] **Stage 3 — Launch:** Turso + Vercel + Blob, custom domain, search indexing
+- [x] **Stage 2 — Personalise:** real photos, bio, education, projects, certificates (v1.2.0) — privacy notice still to write in Admin → Settings
+- [x] **v1.3 — Backup & deploy anywhere:** full-site backup/restore/undo, schedules, Docker, VPS, Hostinger, S3/R2 storage
+- [x] **v1.4 — AI assistant:** fill any form, write/polish text, generate logos/icons/covers with your own Claude / Gemini / OpenAI key
+- [ ] **v1.5 — AI bulk import & “Ask about me” chat (off by default)**
+- [ ] **Stage 3 — Launch:** custom domain, search indexing
 - [ ] **Stage 4 — Grow:** built‑in blog editor, GitHub/LeetCode stats, email alerts, analytics, two‑factor login
 - [ ] **Stage 5 — Future‑ready:** theme presets, 3D avatar, AI “ask me anything”, multi‑language
 

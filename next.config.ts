@@ -13,8 +13,12 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Self-contained server build for Docker / VPS / Hostinger / any Node host (Vercel ignores this).
+  output: "standalone",
+  // Runtime data (database, uploads, backups) never ships in the build — see also scripts/clean-standalone.mjs (postbuild).
+  outputFileTracingExcludes: { "*": ["data/**", "backups/**", "content/backups/**", "docs/**/*.pdf"] },
   reactStrictMode: true,
-  serverExternalPackages: ["@libsql/client", "libsql"],
+  serverExternalPackages: ["@libsql/client", "libsql", "sharp"],
   experimental: {
     // allow certificate PDFs / large photos through route handlers
     proxyClientMaxBodySize: "20mb",

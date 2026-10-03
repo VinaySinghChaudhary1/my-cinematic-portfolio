@@ -26,4 +26,12 @@ export const MIGRATIONS: string[] = [
   `CREATE TABLE IF NOT EXISTS audit_log (
     id TEXT PRIMARY KEY, user_id TEXT, action TEXT NOT NULL, detail TEXT NOT NULL DEFAULT '',
     ip TEXT NOT NULL DEFAULT '', created_at INTEGER NOT NULL)`,
+  `CREATE TABLE IF NOT EXISTS backups (
+    id TEXT PRIMARY KEY, kind TEXT NOT NULL, label TEXT NOT NULL DEFAULT '', size INTEGER NOT NULL,
+    protected INTEGER NOT NULL DEFAULT 0, summary TEXT NOT NULL DEFAULT '{}', created_at INTEGER NOT NULL)`,
+  `CREATE TABLE IF NOT EXISTS ai_usage (
+    id TEXT PRIMARY KEY, provider TEXT NOT NULL, model TEXT NOT NULL, task TEXT NOT NULL,
+    input_tokens INTEGER NOT NULL DEFAULT 0, output_tokens INTEGER NOT NULL DEFAULT 0,
+    ok INTEGER NOT NULL, error TEXT NOT NULL DEFAULT '', created_at INTEGER NOT NULL)`,
+  `CREATE INDEX IF NOT EXISTS ai_usage_created_idx ON ai_usage(created_at)`,
 ];

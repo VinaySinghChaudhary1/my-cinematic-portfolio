@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { createClient, type Client } from "@libsql/client";
 import { drizzle, type LibSQLDatabase } from "drizzle-orm/libsql";
 import * as schema from "./schema";
@@ -8,11 +10,17 @@ type DB = LibSQLDatabase<typeof schema>;
 const globalForDb = globalThis as unknown as { __db?: DB; __client?: Client; __migrated?: Promise<void> };
 
 function makeClient(): Client {
-  const url = process.env.DATABASE_URL || "file:./data/portfolio.db";
-  if (process.env.NODE_ENV === "production" && process.env.VERCEL && url.startsWith("file:")) {
-    console.warn(
-      "[db] DATABASE_URL points to a local file on Vercel — data will NOT persist. Use a Turso URL (see docs/DEPLOYMENT.md).",
-    );
+  const dataDir = path.resolve(/*turbopackIgnore: true*/ process.env.DATA_DIR || "data");
+  const url = process.env.DATABASE_URL || `file:${path.join(dataDir, "portfolio.db")}`;
+  if (url.startsWith("file:")) {
+    try {
+      fs.mkdirSync(path.dirname(path.resolve(/*turbopackIgnore: true*/ url.slice(5))), { recursive: true });
+    } catch {
+      /* read-only FS: the client will report a clear error */
+    }
+    if (process.env.NODE_ENV === "production" && (process.env.VERCEL || process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME)) {
+      console.warn("[db] DATABASE_URL points to a local file on a serverless host — data will NOT persist. Use a Turso / libSQL URL (see DEPLOYMENT.md).");
+    }
   }
   return createClient({ url, authToken: process.env.DATABASE_AUTH_TOKEN || undefined });
 }

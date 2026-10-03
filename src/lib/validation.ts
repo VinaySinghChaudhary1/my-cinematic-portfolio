@@ -15,10 +15,10 @@ export function isSafeUrl(value: string): boolean {
   }
 }
 
-/** Media references: uploaded files (/media/…), bundled demo assets (/demo/…) or https URLs. */
+/** Media references: uploaded files (/media/…), bundled demo assets (/demo/…), personal bundled assets (/me/…) or https URLs. */
 export function isSafeMediaUrl(value: string): boolean {
   if (value === "") return true;
-  if (/^\/(media|demo)\/[A-Za-z0-9/_.\-]+$/.test(value) && !value.includes("..")) return true;
+  if (/^\/(media|demo|me)\/[A-Za-z0-9/_.\-]+$/.test(value) && !value.includes("..")) return true;
   try {
     return new URL(value).protocol === "https:";
   } catch {

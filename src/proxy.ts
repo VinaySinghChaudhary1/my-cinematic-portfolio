@@ -27,7 +27,14 @@ export async function proxy(request: NextRequest) {
 
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
   const isDev = process.env.NODE_ENV === "development";
-  const blobHost = "https://*.public.blob.vercel-storage.com";
+  // External file storage hosts (Vercel Blob, or an S3-compatible bucket's public URL)
+  let s3Origin = "";
+  try {
+    s3Origin = process.env.S3_PUBLIC_URL ? new URL(process.env.S3_PUBLIC_URL).origin : "";
+  } catch {
+    /* invalid URL → ignored */
+  }
+  const blobHost = ["https://*.public.blob.vercel-storage.com", s3Origin].filter(Boolean).join(" ");
   const csp = [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ""}`,
@@ -56,7 +63,7 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     {
-      source: "/((?!api|media|demo|_next/static|_next/image|favicon.ico|icon.svg|robots.txt|sitemap.xml).*)",
+      source: "/((?!api|media|demo|me/|_next/static|_next/image|favicon.ico|icon.svg|robots.txt|sitemap.xml).*)",
       missing: [
         { type: "header", key: "next-router-prefetch" },
         { type: "header", key: "purpose", value: "prefetch" },

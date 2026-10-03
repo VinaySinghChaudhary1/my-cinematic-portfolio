@@ -91,6 +91,31 @@ export const auditLog = sqliteTable("audit_log", {
   createdAt: integer("created_at").notNull(),
 });
 
+/** Backup archives kept on the server (the archive bytes live in private storage, encrypted at rest). */
+export const backups = sqliteTable("backups", {
+  id: text("id").primaryKey(),
+  kind: text("kind").notNull(), // manual | scheduled | pre-restore | uploaded | cli
+  label: text("label").notNull().default(""),
+  size: integer("size").notNull(),
+  protected: integer("protected", { mode: "boolean" }).notNull().default(false), // file itself is password-encrypted
+  summary: text("summary").notNull().default("{}"), // JSON: counts, options, appVersion, formatVersion
+  createdAt: integer("created_at").notNull(),
+});
+
+/** One row per AI request (Admin → AI usage). Prompts and keys are never stored. */
+export const aiUsage = sqliteTable("ai_usage", {
+  id: text("id").primaryKey(),
+  provider: text("provider").notNull(),
+  model: text("model").notNull(),
+  task: text("task").notNull(), // fill | text | image | logo | test
+  inputTokens: integer("input_tokens").notNull().default(0),
+  outputTokens: integer("output_tokens").notNull().default(0),
+  ok: integer("ok", { mode: "boolean" }).notNull(),
+  error: text("error").notNull().default(""),
+  createdAt: integer("created_at").notNull(),
+});
+
+export type BackupRow = typeof backups.$inferSelect;
 export type UserRow = typeof users.$inferSelect;
 export type SectionRow = typeof sections.$inferSelect;
 export type ItemRow = typeof items.$inferSelect;

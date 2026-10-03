@@ -7,6 +7,9 @@ import { cn } from "@/lib/utils";
 import { MediaPicker } from "./MediaPicker";
 import { Switch, inputCls } from "./ui";
 import { LayoutPicker } from "./LayoutPicker";
+import { AiImageButton, AiTextButton } from "./ai/AiFieldTools";
+import { AiFillButton } from "./ai/AiFillDialog";
+import type { AiTarget } from "./ai/useAiStatus";
 
 type Values = Record<string, unknown>;
 
@@ -145,7 +148,23 @@ function MarkdownField({ id, value, onChange, invalid, maxLength }: { id: string
   );
 }
 
-export function FieldControl({ field, value, onChange, error, idPrefix }: { field: FieldDef; value: unknown; onChange: (v: unknown) => void; error?: string; idPrefix: string }) {
+export function FieldControl({
+  field,
+  value,
+  onChange,
+  error,
+  idPrefix,
+  ai,
+  allValues,
+}: {
+  field: FieldDef;
+  value: unknown;
+  onChange: (v: unknown) => void;
+  error?: string;
+  idPrefix: string;
+  ai?: AiTarget;
+  allValues?: Values;
+}) {
   const id = `${idPrefix}-${field.name}`;
   const invalid = !!error;
   const describedBy = [field.help ? `${id}-help` : "", error ? `${id}-err` : ""].filter(Boolean).join(" ") || undefined;
@@ -219,12 +238,32 @@ export function FieldControl({ field, value, onChange, error, idPrefix }: { fiel
   }
 
   const isBool = field.type === "boolean";
+  const aiText = ai && allValues && (field.type === "textarea" || field.type === "markdown");
+  const aiImage = ai && allValues && (field.type === "image" || field.type === "images");
+  const labelEl = (
+    <label id={`${id}-label`} htmlFor={["image", "images", "file", "tags", "layout"].includes(field.type) ? undefined : id} className={cn("text-sm font-medium text-ink/90", !isBool && !aiText && !aiImage && "mb-1.5 block")}>
+      {field.label}
+      {field.required && <span className="ml-0.5 text-danger" aria-hidden>*</span>}
+    </label>
+  );
   return (
     <div className={cn(isBool && "flex items-center justify-between gap-4 rounded-xl border border-line bg-black/20 px-4 py-3")}>
-      <label id={`${id}-label`} htmlFor={["image", "images", "file", "tags", "layout"].includes(field.type) ? undefined : id} className={cn("text-sm font-medium text-ink/90", !isBool && "mb-1.5 block")}>
-        {field.label}
-        {field.required && <span className="ml-0.5 text-danger" aria-hidden>*</span>}
-      </label>
+      {aiText || aiImage ? (
+        <div className="mb-1.5 flex items-center justify-between gap-2">
+          {labelEl}
+          {aiText && <AiTextButton field={field} value={String(value ?? "")} onChange={(v) => onChange(v)} allValues={allValues!} />}
+          {aiImage && (
+            <AiImageButton
+              field={field}
+              allValues={allValues!}
+              ai={ai}
+              onPick={(url) => onChange(field.type === "images" ? [...(Array.isArray(value) ? (value as string[]) : []), url] : url)}
+            />
+          )}
+        </div>
+      ) : (
+        labelEl
+      )}
       {control}
       {field.help && !isBool && (
         <p id={`${id}-help`} className="mt-1 text-xs text-faint">
@@ -246,21 +285,31 @@ export function DynamicForm({
   onChange,
   errors = {},
   idPrefix,
+  ai,
 }: {
   fields: FieldDef[];
   values: Values;
   onChange: (v: Values) => void;
   errors?: Record<string, string>;
   idPrefix: string;
+  /** Turns on the ✨ AI tools for this form. */
+  ai?: AiTarget;
 }) {
   const full = (f: FieldDef) => ["textarea", "markdown", "images", "tags", "boolean", "layout"].includes(f.type);
   return (
-    <div className="grid gap-5 md:grid-cols-2">
-      {fields.map((f) => (
-        <div key={f.name} className={cn(full(f) && "md:col-span-2")}>
-          <FieldControl field={f} idPrefix={idPrefix} value={values[f.name]} error={errors[f.name]} onChange={(v) => onChange({ ...values, [f.name]: v })} />
+    <div className="space-y-5">
+      {ai && (
+        <div className="flex justify-end">
+          <AiFillButton ai={ai} fields={fields} values={values} onApply={onChange} />
         </div>
-      ))}
+      )}
+      <div className="grid gap-5 md:grid-cols-2">
+        {fields.map((f) => (
+          <div key={f.name} className={cn(full(f) && "md:col-span-2")}>
+            <FieldControl field={f} idPrefix={idPrefix} value={values[f.name]} error={errors[f.name]} onChange={(v) => onChange({ ...values, [f.name]: v })} ai={ai} allValues={values} />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

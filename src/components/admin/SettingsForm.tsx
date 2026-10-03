@@ -68,7 +68,7 @@ function Group({ group, initial }: { group: SettingsGroup; initial: Record<strin
             — then replace every [BRACKETED] part with your real details before publishing.
           </div>
         )}
-        <DynamicForm idPrefix={group.key} fields={group.fields} values={values} onChange={setValues} errors={errors} />
+        <DynamicForm idPrefix={group.key} fields={group.fields} values={values} onChange={setValues} errors={errors} ai={["profile", "seo", "footer", "privacy"].includes(group.key) ? { target: "settings", settingsGroup: group.key } : undefined} />
         <div className="mt-6 flex items-center justify-end gap-3">
           {dirty && <span className="text-xs text-warn">Unsaved changes</span>}
           <Button

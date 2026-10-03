@@ -7,7 +7,7 @@ import { getCurrentUser } from "@/lib/server/auth";
 import { Card, PageHeader } from "@/components/admin/ui";
 
 export default async function Dashboard() {
-  const [sections, settings, user, [{ items }], [{ media }], [{ unread }], recent] = await Promise.all([
+  const [sections, settings, user, [{ items }], [{ media }], [{ unread }], recent, [{ backupCount }]] = await Promise.all([
     getAllSections(),
     getSettings(),
     getCurrentUser(),
@@ -15,6 +15,7 @@ export default async function Dashboard() {
     db.select({ media: count() }).from(schema.media),
     db.select({ unread: count() }).from(schema.messages).where(eq(schema.messages.read, false)),
     db.select().from(schema.messages).orderBy(desc(schema.messages.createdAt)).limit(4),
+    db.select({ backupCount: count() }).from(schema.backups),
   ]);
   const enabled = sections.filter((s) => s.enabled).length;
   const usingDemo = settings.profile.name === "Your Name" || settings.profile.avatar.startsWith("/demo/");
@@ -25,6 +26,7 @@ export default async function Dashboard() {
     { done: (user?.sessionVersion ?? 1) > 1, label: "Change the generated admin password", href: "/admin/account" },
     { done: settings.privacy.published, label: "Write & publish your privacy notice", href: "/admin/settings#privacy" },
     { done: settings.seo.indexable, label: "Allow search engines once ready to launch", href: "/admin/settings#seo" },
+    { done: backupCount > 0, label: "Download your first full backup", href: "/admin/backups" },
   ];
 
   const stats = [

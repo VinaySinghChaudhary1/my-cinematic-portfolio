@@ -1,0 +1,12 @@
+# docker compose up -d   → site on http://localhost:3000, database + uploads + backups kept in the "portfolio-data" volume
+services:
+  portfolio:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file: .env.production
+    volumes:
+      - portfolio-data:/app/data
+volumes:
+  portfolio-data:

@@ -51,3 +51,18 @@ export async function verifySession(token: string | undefined | null): Promise<S
     return null;
   }
 }
+
+/** Short-lived single-purpose tokens (e.g. a backup download link). Bound to an audience so they can't be reused elsewhere. */
+export async function signScoped(sub: string, audience: string, ttlSeconds: number, claims: Record<string, unknown> = {}): Promise<string> {
+  return new SignJWT(claims).setProtectedHeader({ alg: "HS256" }).setSubject(sub).setIssuedAt().setExpirationTime(`${ttlSeconds}s`).setIssuer("portfolio").setAudience(audience).sign(secretKey());
+}
+
+export async function verifyScoped(token: string | null | undefined, audience: string): Promise<(Record<string, unknown> & { sub: string }) | null> {
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, secretKey(), { algorithms: ["HS256"], issuer: "portfolio", audience });
+    return typeof payload.sub === "string" ? (payload as Record<string, unknown> & { sub: string }) : null;
+  } catch {
+    return null;
+  }
+}
