@@ -11,7 +11,7 @@ const globalForDb = globalThis as unknown as { __db?: DB; __client?: Client; __m
 
 function makeClient(): Client {
   const dataDir = path.resolve(/*turbopackIgnore: true*/ process.env.DATA_DIR || "data");
-  const url = process.env.DATABASE_URL || `file:${path.join(dataDir, "portfolio.db")}`;
+  const url = process.env.DATABASE_URL || process.env.TURSO_DATABASE_URL || `file:${path.join(dataDir, "portfolio.db")}`;
   if (url.startsWith("file:")) {
     try {
       fs.mkdirSync(path.dirname(path.resolve(/*turbopackIgnore: true*/ url.slice(5))), { recursive: true });
@@ -22,7 +22,7 @@ function makeClient(): Client {
       console.warn("[db] DATABASE_URL points to a local file on a serverless host — data will NOT persist. Use a Turso / libSQL URL (see DEPLOYMENT.md).");
     }
   }
-  return createClient({ url, authToken: process.env.DATABASE_AUTH_TOKEN || undefined });
+  return createClient({ url, authToken: process.env.DATABASE_AUTH_TOKEN || process.env.TURSO_AUTH_TOKEN || undefined });
 }
 
 export const client: Client = globalForDb.__client ?? makeClient();
