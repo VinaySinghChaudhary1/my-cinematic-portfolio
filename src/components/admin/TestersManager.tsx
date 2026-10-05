@@ -286,7 +286,7 @@ export function TestersManager({ emailReady, maintenance, betaSections }: { emai
 
       <Modal open={!!creds} onClose={() => setCreds(null)} title="Tester login details">
         {creds && (
-          <div className="space-y-4">
+          <div className="space-y-4 p-5">
             <p className="text-sm text-muted">
               Save or send these now — <b className="text-ink">the password won&apos;t be shown again</b>. You can always make a new one.
             </p>
@@ -320,7 +320,7 @@ export function TestersManager({ emailReady, maintenance, betaSections }: { emai
 
       <Modal open={!!del} onClose={() => setDel(null)} title="Delete tester?">
         {del && (
-          <div className="space-y-4">
+          <div className="space-y-4 p-5">
             <p className="text-sm text-muted">{del.name} will be signed out and can&apos;t sign in again. Their feedback messages stay in Messages.</p>
             <div className="flex justify-end gap-2">
               <Button variant="ghost" onClick={() => setDel(null)}>Cancel</Button>

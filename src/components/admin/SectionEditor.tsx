@@ -63,7 +63,7 @@ function PublishControl({ value, onChange }: { value: Pub; onChange: (v: Pub) =>
           else if (v === "published") onChange({ status: "published", publishAt: null });
           else onChange({ status: "published", publishAt: value.publishAt && value.publishAt > Date.now() ? value.publishAt : Date.now() + 86_400_000 });
         }}
-        className={cn(inputCls, "h-9 w-auto py-1")}
+        className="h-9 rounded-xl border border-line bg-black/30 px-3 text-sm text-ink focus:border-accent-2 focus:outline-none [color-scheme:dark]"
       >
         <option value="published">Published</option>
         <option value="draft">Draft</option>
@@ -75,7 +75,7 @@ function PublishControl({ value, onChange }: { value: Pub; onChange: (v: Pub) =>
           aria-label="Publish date and time"
           value={toLocalInput(value.publishAt)}
           onChange={(e) => onChange({ status: "published", publishAt: e.target.value ? new Date(e.target.value).getTime() : null })}
-          className={cn(inputCls, "h-9 w-auto py-1")}
+          className="h-9 rounded-xl border border-line bg-black/30 px-3 text-sm text-ink focus:border-accent-2 focus:outline-none [color-scheme:dark]"
         />
       )}
       {past && <span className="text-xs text-warn">This time has passed — it&apos;s live now.</span>}
