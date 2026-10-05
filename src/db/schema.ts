@@ -12,6 +12,41 @@ export const users = sqliteTable("users", {
   lockedUntil: integer("locked_until"),
   lastLoginAt: integer("last_login_at"),
   createdAt: integer("created_at").notNull(),
+  /** Linked Google account (OpenID `sub`) — enables "Continue with Google" for this admin. */
+  googleSub: text("google_sub"),
+  googleEmail: text("google_email"),
+});
+
+/** Beta testers: may view the site during maintenance and beta-only sections. Never admins. */
+export const testers = sqliteTable("testers", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  username: text("username").notNull().unique(),
+  email: text("email").notNull().default(""),
+  phone: text("phone").notNull().default(""),
+  passwordHash: text("password_hash").notNull(),
+  canSeeDrafts: integer("can_see_drafts", { mode: "boolean" }).notNull().default(true),
+  note: text("note").notNull().default(""),
+  expiresAt: integer("expires_at"),
+  revokedAt: integer("revoked_at"),
+  sessionVersion: integer("session_version").notNull().default(1),
+  failedAttempts: integer("failed_attempts").notNull().default(0),
+  lockedUntil: integer("locked_until"),
+  lastSeenAt: integer("last_seen_at"),
+  googleSub: text("google_sub"),
+  createdAt: integer("created_at").notNull(),
+});
+
+/** One-time tokens (password reset). Only a SHA-256 hash of the token is stored. */
+export const authTokens = sqliteTable("auth_tokens", {
+  id: text("id").primaryKey(),
+  kind: text("kind").notNull(), // admin | tester
+  subjectId: text("subject_id").notNull(),
+  purpose: text("purpose").notNull(), // reset
+  tokenHash: text("token_hash").notNull().unique(),
+  expiresAt: integer("expires_at").notNull(),
+  usedAt: integer("used_at"),
+  createdAt: integer("created_at").notNull(),
 });
 
 /** Key/value JSON settings (site profile, SEO, theme, maintenance, legal pages…). */
@@ -31,6 +66,8 @@ export const sections = sqliteTable("sections", {
   showInNav: integer("show_in_nav", { mode: "boolean" }).notNull().default(true),
   sortOrder: integer("sort_order").notNull().default(0),
   config: text("config").notNull().default("{}"),
+  /** public = everyone · beta = only beta testers and the admin (test a new section before launch). */
+  audience: text("audience").notNull().default("public"),
   updatedAt: integer("updated_at").notNull(),
 });
 
@@ -43,6 +80,9 @@ export const items = sqliteTable(
     data: text("data").notNull(),
     visible: integer("visible", { mode: "boolean" }).notNull().default(true),
     featured: integer("featured", { mode: "boolean" }).notNull().default(false),
+    /** draft = never public · published = public from `publishAt` (null = now). */
+    status: text("status").notNull().default("published"),
+    publishAt: integer("publish_at"),
     sortOrder: integer("sort_order").notNull().default(0),
     createdAt: integer("created_at").notNull(),
     updatedAt: integer("updated_at").notNull(),
@@ -117,6 +157,7 @@ export const aiUsage = sqliteTable("ai_usage", {
 
 export type BackupRow = typeof backups.$inferSelect;
 export type UserRow = typeof users.$inferSelect;
+export type TesterRow = typeof testers.$inferSelect;
 export type SectionRow = typeof sections.$inferSelect;
 export type ItemRow = typeof items.$inferSelect;
 export type MediaRow = typeof media.$inferSelect;

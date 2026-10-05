@@ -12,6 +12,7 @@ const body = z.object({
   subtitle: z.string().trim().max(200).optional(),
   enabled: z.boolean().optional(),
   showInNav: z.boolean().optional(),
+  audience: z.enum(["public", "beta"]).optional(),
   config: z.record(z.string(), z.unknown()).optional(),
 });
 
@@ -28,8 +29,9 @@ export const PATCH = route<{ key: string }>(async (req, { params }) => {
   if (v.subtitle !== undefined) update.subtitle = v.subtitle;
   if (v.enabled !== undefined) update.enabled = v.enabled;
   if (v.showInNav !== undefined) update.showInNav = v.showInNav;
+  if (v.audience !== undefined) update.audience = v.audience;
   if (v.config !== undefined) update.config = JSON.stringify(schemaFromFields(def.configFields).parse(v.config));
   await db.update(schema.sections).set(update).where(eq(schema.sections.key, key));
-  await audit(user.id, "section_updated", `${key}${v.enabled !== undefined ? ` enabled=${v.enabled}` : ""}`, clientIp(req));
+  await audit(user.id, "section_updated", `${key}${v.enabled !== undefined ? ` enabled=${v.enabled}` : ""}${v.audience ? ` audience=${v.audience}` : ""}`, clientIp(req));
   return json({ ok: true });
 });

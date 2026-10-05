@@ -10,6 +10,8 @@ export interface PublicItem {
   id: string;
   featured: boolean;
   data: ItemData;
+  /** Only in preview mode: why this entry isn't public yet. */
+  preview?: "draft" | "scheduled";
 }
 export interface PublicSection {
   key: string;
@@ -17,8 +19,19 @@ export interface PublicSection {
   title: string;
   subtitle: string;
   showInNav: boolean;
+  audience: string;
   config: Record<string, unknown>;
   items: PublicItem[];
+}
+
+export type SiteMode = "public" | "beta" | "preview";
+
+/** An entry is live when it's visible, published, and its publish time (if any) has passed. */
+export function itemState(r: { visible: boolean; status: string; publishAt: number | null }, now = Date.now()): "live" | "draft" | "scheduled" | "hidden" {
+  if (!r.visible) return "hidden";
+  if (r.status === "draft") return "draft";
+  if (r.publishAt && r.publishAt > now) return "scheduled";
+  return "live";
 }
 
 function safeParse<T>(s: string, fallback: T): T {
@@ -56,34 +69,53 @@ export const getAllSections = cache(async () => {
   }));
 });
 
-export async function getItems(sectionKey: string, opts: { onlyVisible?: boolean } = {}) {
+export async function getItems(sectionKey: string, opts: { onlyVisible?: boolean; mode?: SiteMode } = {}) {
   await ensureSchema();
   const rows = await db
     .select()
     .from(schema.items)
     .where(eq(schema.items.sectionKey, sectionKey))
     .orderBy(asc(schema.items.sortOrder), asc(schema.items.createdAt));
+  const now = Date.now();
   return rows
-    .filter((r) => !opts.onlyVisible || r.visible)
+    .filter((r) => {
+      if (!opts.onlyVisible) return true;
+      const st = itemState(r, now);
+      return st === "live" || (opts.mode === "preview" && (st === "draft" || st === "scheduled"));
+    })
     .map((r) => ({ ...r, data: safeParse<ItemData>(r.data, {}) }));
 }
 
-/** Everything the public home page needs, in one call. Disabled sections and hidden items are excluded server-side. */
-export const getPublicSite = cache(async () => {
-  const [settings, allSections] = await Promise.all([getSettings(), getAllSections()]);
-  const enabled = allSections.filter((s) => s.enabled && getSectionType(s.type));
+/** Settings safe to send to the browser (private groups such as notification addresses removed). */
+export function publicSettings(s: SiteSettings): SiteSettings {
+  return { ...s, notifications: { alertEmail: "", messageAlerts: false, includeMessage: false, feedbackAlerts: false } };
+}
+
+/**
+ * Everything the home page needs, in one call. Disabled sections and non-live entries are excluded server-side.
+ * mode: public (visitors) · beta (testers/admin: + beta-only sections) · preview (+ drafts & scheduled entries)
+ */
+export const getPublicSite = cache(async (mode: SiteMode = "public") => {
+  const [rawSettings, allSections] = await Promise.all([getSettings(), getAllSections()]);
+  const settings = publicSettings(rawSettings);
+  const enabled = allSections.filter((s) => s.enabled && getSectionType(s.type) && (mode !== "public" || s.audience !== "beta"));
+  const now = Date.now();
   const sections: PublicSection[] = await Promise.all(
     enabled.map(async (s) => {
       const def = getSectionType(s.type)!;
-      const items = def.itemFields ? await getItems(s.key, { onlyVisible: true }) : [];
+      const items = def.itemFields ? await getItems(s.key, { onlyVisible: true, mode }) : [];
       return {
         key: s.key,
         type: s.type,
         title: s.title,
         subtitle: s.subtitle,
         showInNav: s.showInNav,
+        audience: s.audience,
         config: s.config,
-        items: items.map((i) => ({ id: i.id, featured: i.featured, data: i.data })),
+        items: items.map((i) => {
+          const st = itemState(i, now);
+          return { id: i.id, featured: i.featured, data: i.data, ...(st === "draft" || st === "scheduled" ? { preview: st } : {}) };
+        }),
       };
     }),
   );
@@ -95,11 +127,11 @@ export function projectSlug(data: ItemData): string {
   return slugify(s);
 }
 
-export async function getProjectBySlug(slug: string) {
+export async function getProjectBySlug(slug: string, mode: SiteMode = "public") {
   const all = await getAllSections();
-  const projSections = all.filter((s) => s.type === "projects" && s.enabled);
+  const projSections = all.filter((s) => s.type === "projects" && s.enabled && (mode !== "public" || s.audience !== "beta"));
   for (const s of projSections) {
-    const items = await getItems(s.key, { onlyVisible: true });
+    const items = await getItems(s.key, { onlyVisible: true, mode });
     const idx = items.findIndex((i) => projectSlug(i.data) === slug);
     if (idx >= 0) {
       const prev = items[idx - 1];

@@ -18,6 +18,7 @@ export default async function SectionsPage() {
     description: getSectionType(s.type)?.description ?? "",
     enabled: s.enabled,
     showInNav: s.showInNav,
+    audience: s.audience,
     itemCount: map[s.key] ?? 0,
     hasItems: !!getSectionType(s.type)?.itemFields,
     layoutLabel: layoutsFor(s.type).find((l) => l.value === resolveLayout(s.type, s.config.layout))?.label ?? "",
@@ -27,7 +28,7 @@ export default async function SectionsPage() {
     <>
       <PageHeader
         title="Sections & content"
-        description="Turn sections on or off, choose whether they appear in the menu, and change their order. Click a section to edit its content."
+        description="Turn sections on or off, choose whether they appear in the menu, keep a section for beta testers only while you test it, and change the order. Click a section to edit its content."
       />
       <SectionsManager initial={rows} />
     </>

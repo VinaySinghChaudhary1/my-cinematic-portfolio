@@ -24,7 +24,12 @@ const nextConfig: NextConfig = {
     proxyClientMaxBodySize: "20mb",
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // the service worker must always be re-checked so updates reach installed apps quickly
+      { source: "/sw.js", headers: [{ key: "Cache-Control", value: "no-cache, no-store, must-revalidate" }, { key: "Service-Worker-Allowed", value: "/" }] },
+      { source: "/icons/:file*", headers: [{ key: "Cache-Control", value: "public, max-age=604800" }] },
+    ];
   },
 };
 

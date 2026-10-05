@@ -3,7 +3,7 @@ import path from "node:path";
 import { createClient, type Client } from "@libsql/client";
 import { drizzle, type LibSQLDatabase } from "drizzle-orm/libsql";
 import * as schema from "./schema";
-import { MIGRATIONS } from "./migrations";
+import { COLUMN_MIGRATIONS, MIGRATIONS } from "./migrations";
 
 type DB = LibSQLDatabase<typeof schema>;
 
@@ -38,6 +38,13 @@ export function ensureSchema(): Promise<void> {
   if (!globalForDb.__migrated) {
     globalForDb.__migrated = (async () => {
       for (const stmt of MIGRATIONS) await client.execute(stmt);
+      for (const stmt of COLUMN_MIGRATIONS) {
+        try {
+          await client.execute(stmt);
+        } catch (e) {
+          if (!/duplicate column/i.test(String((e as Error)?.message ?? e))) throw e;
+        }
+      }
     })().catch((e) => {
       globalForDb.__migrated = undefined;
       throw e;

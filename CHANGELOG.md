@@ -4,7 +4,22 @@ All notable changes to this project are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
 ## [Unreleased]
-- v1.5: AI bulk import from résumé / LinkedIn; public "Ask about me" chat (off by default)
+
+## [1.5.0] — 2026-10-05 · Access, email, drafts, PWA, bulk import & chat
+### Added
+- **Beta testers** (Admin → Beta testers): create a login for a person (generated password shown once), send the invite by **email** or **WhatsApp** (wa.me link), expiry dates, "can see drafts", revoke / restore / new password / delete, last-seen and Google-linked status. Testers sign in at `/beta`, see the site during **maintenance** and **Beta-only sections**, and send feedback to Messages; they can never open the admin panel (separate cookie and token audience, lock-out after 8 failed logins)
+- **Beta-only sections**: a "Beta" switch per section in Sections & content
+- **Forgot password** for the admin and testers: emailed single-use links (30 min, only a hash stored, same answer whether or not the account exists) and a "password changed" notice; resetting signs out every session
+- **Google sign-in** (optional): for the admin (only a linked account, linked in Account & security) and testers (matching invite email). PKCE + state + nonce, ID token verified against Google's keys
+- **Email** via Resend's API (optional): new contact-message and beta-feedback alerts (Settings → Notifications), tester invites, test email button
+- **Drafts & scheduled publishing** for every entry (Published / Draft / Scheduled date-time) with list badges; drafts preview for you and allowed testers from the top bar; kept in backups and content files (`draft`, `publishAt`, section `audience`)
+- **Installable app & offline cache** (PWA): web manifest + icons, service worker (static files cache-first, images stale-while-revalidate, pages network-first with an offline page); admin / API / beta / signed-in views are never cached
+- **Bulk import** (Admin → Bulk import): résumé PDF/photo/text read by your AI providers, or a LinkedIn data-export ZIP (read in the browser, no AI needed) → review list with duplicate detection and inline editing → added as drafts after an automatic "Before bulk import" backup
+- **"Ask about me" chat** (Admin → AI assistant): off / beta testers & me / everyone; answers only from published content plus your notes; per-visitor and daily limits; chosen provider; no transcripts stored
+- `docs/EMAIL-AND-ACCESS.md`; 19 new tests (tokens, tester auth & lock-out, session isolation, Google URL, drafts/scheduling/beta filtering, content format, LinkedIn CSV mapping, import review/apply, chat grounding)
+### Changed
+- AI settings: the old `publicChat` flag is replaced by chat settings (migrated automatically, off)
+- Admin API `PUT /api/admin/ai` accepts partial updates
 
 ## [1.4.2] — 2026-10-03 · Several AI providers, order & automatic fallback
 ### Added

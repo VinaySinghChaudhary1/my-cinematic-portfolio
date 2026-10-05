@@ -21,7 +21,7 @@ export default async function EditSectionPage({ params }: { params: Promise<{ ke
         section={{ key: section.key, type: section.type, title: section.title, subtitle: section.subtitle, enabled: section.enabled, config: section.config }}
         typeLabel={def.label}
         description={def.description}
-        items={items.map((i) => ({ id: i.id, data: i.data, visible: i.visible, featured: i.featured }))}
+        items={items.map((i) => ({ id: i.id, data: i.data, visible: i.visible, featured: i.featured, status: i.status, publishAt: i.publishAt }))}
       />
     </>
   );

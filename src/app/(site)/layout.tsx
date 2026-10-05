@@ -1,17 +1,26 @@
 import { getPublicSite } from "@/lib/server/content";
-import { getCurrentUser } from "@/lib/server/auth";
+import { getViewer } from "@/lib/server/viewer";
+import { AccessBar } from "@/components/site/AccessBar";
 import { SiteChrome } from "@/components/site/SiteChrome";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { Maintenance } from "@/components/site/Maintenance";
 import { navLinks } from "@/components/site/nav-links";
+import { AskChat } from "@/components/site/AskChat";
+import { getAiConfig } from "@/lib/server/ai/config";
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
-  const { settings, sections } = await getPublicSite();
-  if (settings.maintenance.enabled && !(await getCurrentUser())) {
+  const viewer = await getViewer();
+  const { settings, sections } = await getPublicSite(viewer.mode);
+  if (settings.maintenance.enabled && viewer.kind === "public") {
     return <Maintenance name={settings.profile.name} message={settings.maintenance.message} socials={settings.socials} />;
   }
+  const betaSections = sections.filter((s) => s.audience === "beta").length;
+  const drafts = viewer.previewOn ? sections.reduce((n, s) => n + s.items.filter((i) => i.preview).length, 0) : 0;
+  const showBar = viewer.kind === "tester" || (viewer.kind === "admin" && (settings.maintenance.enabled || betaSections > 0 || viewer.previewOn));
   const a = settings.appearance;
+  const chat = (await getAiConfig()).chat;
+  const chatOn = chat.mode === "public" || (chat.mode === "beta" && viewer.kind !== "public");
   return (
     <>
       <SiteChrome
@@ -24,10 +33,8 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         smooth={a.smoothScroll}
         grain={a.filmGrain}
       />
-      {settings.maintenance.enabled && (
-        <div className="fixed left-1/2 top-20 z-[70] -translate-x-1/2 rounded-full border border-warn/40 bg-bg-2/90 px-4 py-1.5 text-xs text-warn">
-          Maintenance mode is ON — only you can see the site.
-        </div>
+      {showBar && viewer.kind !== "public" && (
+        <AccessBar kind={viewer.kind} name={viewer.name} maintenance={settings.maintenance.enabled} canPreview={viewer.canPreview} previewOn={viewer.previewOn} drafts={drafts} betaSections={betaSections} />
       )}
       <Navbar initials={settings.profile.initials || settings.profile.name.slice(0, 2)} logo={settings.profile.logo} name={settings.profile.name} links={navLinks(sections)} resume={settings.profile.resume} />
       <main id="main" className="relative">
@@ -41,6 +48,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         privacy={settings.privacy.published}
         adminLink={settings.footer.showAdminLink}
       />
+      {chatOn && <AskChat name={settings.profile.name} greeting={chat.greeting} beta={chat.mode === "beta"} />}
     </>
   );
 }

@@ -98,6 +98,18 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
     ],
   },
   {
+    key: "notifications",
+    label: "Notifications",
+    description:
+      "Email alerts (needs RESEND_API_KEY on the server — see docs/EMAIL-AND-ACCESS.md). Use “Send test email” on the Account page to check it works.",
+    fields: [
+      { name: "alertEmail", label: "Send alerts to", type: "email", help: "Empty = your public email from Profile." },
+      { name: "messageAlerts", label: "Email me when someone sends a contact message", type: "boolean" },
+      { name: "includeMessage", label: "Include the full message in the email", type: "boolean", help: "Off = only name, email and subject; read the rest in the admin." },
+      { name: "feedbackAlerts", label: "Email me when a beta tester sends feedback", type: "boolean" },
+    ],
+  },
+  {
     key: "privacy",
     label: "Privacy notice",
     description:
@@ -118,6 +130,7 @@ export type SiteSettings = {
   footer: { text: string; showBuiltWith: boolean; showAdminLink: boolean };
   maintenance: { enabled: boolean; message: string };
   privacy: { published: boolean; effectiveDate: string; content: string };
+  notifications: { alertEmail: string; messageAlerts: boolean; includeMessage: boolean; feedbackAlerts: boolean };
 };
 
 export const DEFAULT_SETTINGS: SiteSettings = {
@@ -128,4 +141,5 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   footer: { text: "", showBuiltWith: true, showAdminLink: false },
   maintenance: { enabled: false, message: "We're polishing a few things. Please check back soon." },
   privacy: { published: false, effectiveDate: "", content: "" },
+  notifications: { alertEmail: "", messageAlerts: true, includeMessage: true, feedbackAlerts: true },
 };

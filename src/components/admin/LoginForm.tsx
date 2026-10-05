@@ -2,12 +2,13 @@
 import { useState } from "react";
 import { Eye, EyeOff, Lock, AlertTriangle, Clock } from "lucide-react";
 import { Button, inputCls } from "./ui";
+import { GoogleButton } from "@/components/auth/AuthShell";
 
-export function LoginForm({ next, expired }: { next: string; expired: boolean }) {
+export function LoginForm({ next, expired, google, notice }: { next: string; expired: boolean; google?: boolean; notice?: string }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(notice ?? "");
   const [loading, setLoading] = useState(false);
 
   async function submit(e: React.FormEvent) {
@@ -71,9 +72,20 @@ export function LoginForm({ next, expired }: { next: string; expired: boolean })
       <Button type="submit" loading={loading} className="w-full py-3">
         <Lock className="size-4" aria-hidden /> Sign in
       </Button>
-      <p className="text-center text-xs text-faint">
-        Forgot your password? Run <code className="rounded bg-white/5 px-1">npm run admin:reset-password</code> on the server.
+      <p className="text-center text-sm">
+        <a href="/auth/forgot" className="text-accent-2 hover:underline">
+          Forgot your password?
+        </a>
       </p>
+      {google && (
+        <>
+          <div className="flex items-center gap-3 text-xs text-faint" aria-hidden>
+            <span className="h-px flex-1 bg-line" /> or <span className="h-px flex-1 bg-line" />
+          </div>
+          <GoogleButton href={`/api/auth/google/start?intent=admin&next=${encodeURIComponent(next)}`} />
+          <p className="text-center text-[11px] text-faint">Works after you link your Google account in Account &amp; security.</p>
+        </>
+      )}
     </form>
   );
 }

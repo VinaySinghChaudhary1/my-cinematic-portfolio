@@ -7,7 +7,7 @@ import path from "node:path";
 import { asc, desc, eq } from "drizzle-orm";
 import { db, schema, client } from "@/db";
 import { SETTINGS_GROUPS, DEFAULT_SETTINGS } from "@/lib/settings-def";
-import { parseContent, collectAssets, type ImportedContent } from "@/lib/content-import";
+import { parseContent, collectAssets, itemMeta, type ImportedContent } from "@/lib/content-import";
 import { APP_VERSION } from "@/lib/version";
 import { newId } from "../ids";
 import { detectType, storeFile, readStoredFile, putPrivate, getPrivate, deletePrivate, EXT_TO_MIME } from "../storage";
@@ -127,10 +127,11 @@ export async function currentContent(sectionsFilter: BackupOptions["sections"] =
       subtitle: s.subtitle,
       enabled: s.enabled,
       showInNav: s.showInNav,
+      ...(s.audience === "beta" ? { audience: "beta" } : {}),
       config: parse(s.config, {}),
       items: items
         .filter((i) => i.sectionKey === s.key)
-        .map((i) => ({ ...(i.featured ? { featured: true } : {}), ...(i.visible ? {} : { visible: false }), ...parse<Record<string, unknown>>(i.data, {}) })),
+        .map((i) => ({ ...itemMeta(i), ...parse<Record<string, unknown>>(i.data, {}) })),
     })),
   };
 }
@@ -475,10 +476,10 @@ export async function restoreBackup(archive: ReadArchive, scope: RestoreScope, o
           await tx.delete(schema.sections).where(eq(schema.sections.key, s.key));
         }
         const sortOrder = scope.sections !== "all" && prev ? prev.sortOrder : nextOrder++;
-        await tx.insert(schema.sections).values({ key: s.key, type: s.type, title: s.title, subtitle: s.subtitle, enabled: s.enabled, showInNav: s.showInNav, sortOrder, config: JSON.stringify(s.config), updatedAt: t });
+        await tx.insert(schema.sections).values({ key: s.key, type: s.type, title: s.title, subtitle: s.subtitle, enabled: s.enabled, showInNav: s.showInNav, audience: s.audience, sortOrder, config: JSON.stringify(s.config), updatedAt: t });
         let i = 0;
         for (const it of s.items) {
-          await tx.insert(schema.items).values({ id: newId(), sectionKey: s.key, data: JSON.stringify(it.data), visible: it.visible, featured: it.featured, sortOrder: i, createdAt: t + i, updatedAt: t + i });
+          await tx.insert(schema.items).values({ id: newId(), sectionKey: s.key, data: JSON.stringify(it.data), visible: it.visible, featured: it.featured, status: it.status, publishAt: it.publishAt, sortOrder: i, createdAt: t + i, updatedAt: t + i });
           i++;
         }
         report.sections++;

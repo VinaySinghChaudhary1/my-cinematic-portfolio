@@ -18,6 +18,69 @@ interface Item {
   data: Data;
   visible: boolean;
   featured: boolean;
+  status: string;
+  publishAt: number | null;
+}
+type Pub = { status: string; publishAt: number | null };
+
+/** "2026-10-05T18:30" in the browser's local time, for <input type="datetime-local">. */
+function toLocalInput(t: number | null) {
+  if (!t) return "";
+  const d = new Date(t - new Date(t).getTimezoneOffset() * 60_000);
+  return d.toISOString().slice(0, 16);
+}
+function pubState(p: Pub): "published" | "draft" | "scheduled" {
+  if (p.status === "draft") return "draft";
+  if (p.publishAt && p.publishAt > Date.now()) return "scheduled";
+  return "published";
+}
+
+function PublishBadge({ item }: { item: Pub & { visible: boolean } }) {
+  const st = pubState(item);
+  if (st === "published") return null;
+  return (
+    <span
+      className={cn("shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider", st === "draft" ? "bg-white/10 text-muted" : "bg-sky-500/15 text-sky-300")}
+      title={st === "scheduled" ? `Goes live ${new Date(item.publishAt!).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}` : "Only you (and testers who can see drafts) see this"}
+    >
+      {st === "draft" ? "Draft" : `Scheduled · ${new Date(item.publishAt!).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`}
+    </span>
+  );
+}
+
+function PublishControl({ value, onChange }: { value: Pub; onChange: (v: Pub) => void }) {
+  const st = value.status === "draft" ? "draft" : value.publishAt ? "scheduled" : "published";
+  const past = st === "scheduled" && value.publishAt! <= Date.now();
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-sm text-muted">
+      <label htmlFor="item-publish">Publishing</label>
+      <select
+        id="item-publish"
+        value={st}
+        onChange={(e) => {
+          const v = e.target.value;
+          if (v === "draft") onChange({ status: "draft", publishAt: value.publishAt });
+          else if (v === "published") onChange({ status: "published", publishAt: null });
+          else onChange({ status: "published", publishAt: value.publishAt && value.publishAt > Date.now() ? value.publishAt : Date.now() + 86_400_000 });
+        }}
+        className={cn(inputCls, "h-9 w-auto py-1")}
+      >
+        <option value="published">Published</option>
+        <option value="draft">Draft</option>
+        <option value="scheduled">Scheduled</option>
+      </select>
+      {st === "scheduled" && (
+        <input
+          type="datetime-local"
+          aria-label="Publish date and time"
+          value={toLocalInput(value.publishAt)}
+          onChange={(e) => onChange({ status: "published", publishAt: e.target.value ? new Date(e.target.value).getTime() : null })}
+          className={cn(inputCls, "h-9 w-auto py-1")}
+        />
+      )}
+      {past && <span className="text-xs text-warn">This time has passed — it&apos;s live now.</span>}
+    </div>
+  );
 }
 
 function useUnsavedGuard(dirty: boolean) {
@@ -115,7 +178,7 @@ function SectionSettings({ section, fields }: { section: { key: string; type: st
 function ItemsManager({ sectionKey, sectionType, fields, label, initial, isProjects }: { sectionKey: string; sectionType: string; fields: FieldDef[]; label: string; initial: Item[]; isProjects: boolean }) {
   const router = useRouter();
   const [items, setItems] = useState(initial);
-  const [editing, setEditing] = useState<{ id: string | null; data: Data; visible: boolean; featured: boolean } | null>(null);
+  const [editing, setEditing] = useState<{ id: string | null; data: Data; visible: boolean; featured: boolean; status: string; publishAt: number | null } | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<Item | null>(null);
@@ -136,10 +199,10 @@ function ItemsManager({ sectionKey, sectionType, fields, label, initial, isProje
     setErrors({});
     try {
       if (editing.id) {
-        await api(`/api/admin/items/${editing.id}`, { method: "PATCH", json: { data: editing.data, visible: editing.visible, featured: editing.featured } });
+        await api(`/api/admin/items/${editing.id}`, { method: "PATCH", json: { data: editing.data, visible: editing.visible, featured: editing.featured, status: editing.status, publishAt: editing.publishAt } });
         toast.success(`${label} updated`);
       } else {
-        await api(`/api/admin/sections/${sectionKey}/items`, { method: "POST", json: { data: editing.data, visible: editing.visible, featured: editing.featured } });
+        await api(`/api/admin/sections/${sectionKey}/items`, { method: "POST", json: { data: editing.data, visible: editing.visible, featured: editing.featured, status: editing.status, publishAt: editing.publishAt } });
         toast.success(`${label} added`);
       }
       setEditing(null);
@@ -221,7 +284,7 @@ function ItemsManager({ sectionKey, sectionType, fields, label, initial, isProje
           <Button
             onClick={() => {
               setErrors({});
-              setEditing({ id: null, data: blankItem(fields), visible: true, featured: false });
+              setEditing({ id: null, data: blankItem(fields), visible: true, featured: false, status: "published", publishAt: null });
             }}
           >
             <Plus className="size-4" aria-hidden /> Add {label.toLowerCase()}
@@ -243,7 +306,7 @@ function ItemsManager({ sectionKey, sectionType, fields, label, initial, isProje
             title={`No ${label.toLowerCase()} entries yet`}
             text="This section is hidden on your site until you add at least one visible entry."
             action={
-              <Button onClick={() => setEditing({ id: null, data: blankItem(fields), visible: true, featured: false })}>
+              <Button onClick={() => setEditing({ id: null, data: blankItem(fields), visible: true, featured: false, status: "published", publishAt: null })}>
                 <Plus className="size-4" aria-hidden /> Add the first one
               </Button>
             }
@@ -270,10 +333,11 @@ function ItemsManager({ sectionKey, sectionType, fields, label, initial, isProje
                   {thumbField && (
                     <span className="size-12 shrink-0 overflow-hidden rounded-lg bg-white/5">{thumb && <img src={thumb} alt="" className="size-full object-cover" />}</span>
                   )}
-                  <button className="min-w-0 flex-1 text-left" onClick={() => setEditing({ id: it.id, data: { ...it.data }, visible: it.visible, featured: it.featured })}>
+                  <button className="min-w-0 flex-1 text-left" onClick={() => setEditing({ id: it.id, data: { ...it.data }, visible: it.visible, featured: it.featured, status: it.status, publishAt: it.publishAt })}>
                     <span className="block truncate text-sm font-medium text-ink">{String(it.data[primary.name] || "(untitled)")}</span>
                     {secondary && <span className="block truncate text-xs text-muted">{String(it.data[secondary.name] ?? "")}</span>}
                   </button>
+                  <PublishBadge item={it} />
                   <div className="flex items-center gap-1">
                     {isProjects && (
                       <button onClick={() => quick(it, { featured: !it.featured })} aria-pressed={it.featured} aria-label={it.featured ? "Unfeature" : "Feature"} title="Featured" className={cn("grid size-9 place-items-center rounded-lg hover:bg-white/5", it.featured ? "text-warn" : "text-faint")}>
@@ -283,7 +347,7 @@ function ItemsManager({ sectionKey, sectionType, fields, label, initial, isProje
                     <button onClick={() => quick(it, { visible: !it.visible })} aria-label={it.visible ? "Hide from site" : "Show on site"} title={it.visible ? "Visible" : "Hidden"} className="grid size-9 place-items-center rounded-lg text-muted hover:bg-white/5 hover:text-ink">
                       {it.visible ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
                     </button>
-                    <button onClick={() => setEditing({ id: it.id, data: { ...it.data }, visible: it.visible, featured: it.featured })} aria-label="Edit" className="grid size-9 place-items-center rounded-lg text-muted hover:bg-white/5 hover:text-ink">
+                    <button onClick={() => setEditing({ id: it.id, data: { ...it.data }, visible: it.visible, featured: it.featured, status: it.status, publishAt: it.publishAt })} aria-label="Edit" className="grid size-9 place-items-center rounded-lg text-muted hover:bg-white/5 hover:text-ink">
                       <Pencil className="size-4" />
                     </button>
                     <button onClick={() => setConfirmDelete(it)} aria-label="Delete" className="grid size-9 place-items-center rounded-lg text-muted hover:bg-danger/10 hover:text-danger">
@@ -327,6 +391,7 @@ function ItemsManager({ sectionKey, sectionType, fields, label, initial, isProje
                 <label className="flex items-center gap-2 text-sm text-muted">
                   <Switch checked={editing.visible} onChange={(v) => setEditing({ ...editing, visible: v })} label="Visible on site" /> Visible
                 </label>
+                <PublishControl value={{ status: editing.status, publishAt: editing.publishAt }} onChange={(p) => setEditing({ ...editing, ...p })} />
                 {isProjects && (
                   <label className="flex items-center gap-2 text-sm text-muted">
                     <Switch checked={editing.featured} onChange={(v) => setEditing({ ...editing, featured: v })} label="Featured" /> Featured

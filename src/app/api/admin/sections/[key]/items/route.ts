@@ -8,7 +8,13 @@ import { getSectionType } from "@/lib/registry";
 import { schemaFromFields, slugify } from "@/lib/validation";
 import { newId } from "@/lib/server/ids";
 
-const body = z.object({ data: z.record(z.string(), z.unknown()), visible: z.boolean().optional(), featured: z.boolean().optional() });
+const body = z.object({
+  data: z.record(z.string(), z.unknown()),
+  visible: z.boolean().optional(),
+  featured: z.boolean().optional(),
+  status: z.enum(["published", "draft"]).optional(),
+  publishAt: z.number().int().positive().nullable().optional(),
+});
 
 export const POST = route<{ key: string }>(async (req, { params }) => {
   const user = await requireAdmin();
@@ -29,6 +35,8 @@ export const POST = route<{ key: string }>(async (req, { params }) => {
     data: JSON.stringify(data),
     visible: v.visible ?? true,
     featured: v.featured ?? false,
+    status: v.status ?? "published",
+    publishAt: v.publishAt ?? null,
     sortOrder: (m ?? -1) + 1,
     createdAt: t,
     updatedAt: t,

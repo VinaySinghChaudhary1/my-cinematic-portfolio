@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, ExternalLink, Calendar, User } from "lucide-react";
 import { getProjectBySlug } from "@/lib/server/content";
+import { getViewer } from "@/lib/server/viewer";
 import { Markdown } from "@/components/ui/Markdown";
 import { Reveal } from "@/components/site/Reveal";
 import { arr, formatRange, str, youtubeEmbed } from "@/lib/utils";
@@ -11,7 +12,7 @@ type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const r = await getProjectBySlug(slug);
+  const r = await getProjectBySlug(slug, (await getViewer()).mode);
   if (!r) return { title: "Project not found" };
   return {
     title: str(r.project.data.title),
@@ -22,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProjectPage({ params }: Props) {
   const { slug } = await params;
-  const r = await getProjectBySlug(slug);
+  const r = await getProjectBySlug(slug, (await getViewer()).mode);
   if (!r) notFound();
   const d = r.project.data;
   const video = str(d.videoUrl) ? youtubeEmbed(str(d.videoUrl)) : null;

@@ -11,6 +11,8 @@ const body = z.object({
   data: z.record(z.string(), z.unknown()).optional(),
   visible: z.boolean().optional(),
   featured: z.boolean().optional(),
+  status: z.enum(["published", "draft"]).optional(),
+  publishAt: z.number().int().positive().nullable().optional(),
 });
 
 async function load(id: string) {
@@ -35,6 +37,8 @@ export const PATCH = route<{ id: string }>(async (req, { params }) => {
   }
   if (v.visible !== undefined) update.visible = v.visible;
   if (v.featured !== undefined) update.featured = v.featured;
+  if (v.status !== undefined) update.status = v.status;
+  if (v.publishAt !== undefined) update.publishAt = v.publishAt;
   await db.update(schema.items).set(update).where(eq(schema.items.id, id));
   await audit(user.id, "item_updated", `${section.key}/${id}`, clientIp(req));
   return json({ ok: true });

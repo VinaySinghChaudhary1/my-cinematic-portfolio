@@ -48,8 +48,17 @@ interface Config {
   imageOrder: string[];
   fallback: boolean;
   styleNotes: string;
+  chat: ChatCfg;
   info: Record<Kind, KInfo>;
   presets: Preset[];
+}
+interface ChatCfg {
+  mode: "off" | "beta" | "public";
+  greeting: string;
+  notes: string;
+  provider: string;
+  perVisitorHourly: number;
+  dailyCap: number;
 }
 interface UsageRow {
   id: string;
@@ -193,12 +202,14 @@ export function AiSettings() {
           </>
         )}
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-          <p className="text-xs text-faint">Public “Ask about me” chat for visitors: planned — off by default.</p>
+          <span />
           <Button onClick={saveDefaults} loading={saving} disabled={configured.length === 0}>
             <Save className="size-4" aria-hidden /> Save order
           </Button>
         </div>
       </Card>
+
+      <ChatCard initial={cfg.chat} slots={configured} onSaved={load} />
 
       {usage && (
         <Card>
@@ -555,6 +566,87 @@ function ProviderCard({ slot, info, onChanged, roles }: { slot: Slot; info: KInf
             <Trash2 className="size-4" aria-hidden />
           </Button>
         )}
+      </div>
+    </Card>
+  );
+}
+
+function ChatCard({ initial, slots, onSaved }: { initial: ChatCfg; slots: Slot[]; onSaved: () => void }) {
+  const [c, setC] = useState(initial);
+  const [saving, setSaving] = useState(false);
+  const dirty = JSON.stringify(c) !== JSON.stringify(initial);
+  async function save() {
+    setSaving(true);
+    try {
+      await api("/api/admin/ai", { method: "PUT", json: { chat: c } });
+      toast.success(c.mode === "off" ? "Chat is off" : c.mode === "beta" ? "Chat is on for beta testers and you" : "Chat is live for every visitor");
+      onSaved();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not save");
+    } finally {
+      setSaving(false);
+    }
+  }
+  const modes = [
+    { v: "off", label: "Off", hint: "Nobody sees the chat." },
+    { v: "beta", label: "Beta testers & me", hint: "Try it out before visitors see it." },
+    { v: "public", label: "Everyone", hint: "A floating “Ask about me” button on your site." },
+  ] as const;
+  return (
+    <Card>
+      <h2 className="font-display text-lg font-semibold text-ink">“Ask about me” chat</h2>
+      <p className="mt-1 text-sm text-muted">
+        Visitors ask questions and get short answers written <b className="text-ink">only from what&apos;s published on your site</b> (never drafts, messages or settings). Conversations are not stored; only token counts appear in Usage below.
+      </p>
+      {slots.length === 0 && <p className="mt-3 text-sm text-warn">Add an AI provider above first.</p>}
+      <div className="mt-4 grid gap-2 sm:grid-cols-3" role="radiogroup" aria-label="Who sees the chat">
+        {modes.map((m) => (
+          <button
+            key={m.v}
+            type="button"
+            role="radio"
+            aria-checked={c.mode === m.v}
+            onClick={() => setC({ ...c, mode: m.v })}
+            className={cn("rounded-xl border p-3 text-left", c.mode === m.v ? "border-accent/70 bg-accent/10" : "border-line hover:border-accent/40")}
+          >
+            <span className="block text-sm font-medium text-ink">{m.label}</span>
+            <span className="block text-xs text-muted">{m.hint}</span>
+          </button>
+        ))}
+      </div>
+      <div className="mt-5 grid gap-4 md:grid-cols-2">
+        <div>
+          <label htmlFor="chat-greet" className="mb-1 block text-xs text-muted">Greeting</label>
+          <input id="chat-greet" className={inputCls} maxLength={200} value={c.greeting} onChange={(e) => setC({ ...c, greeting: e.target.value })} />
+        </div>
+        <div>
+          <label htmlFor="chat-provider" className="mb-1 block text-xs text-muted">AI provider for the chat</label>
+          <select id="chat-provider" className={cn(inputCls, "[color-scheme:dark]")} value={c.provider} onChange={(e) => setC({ ...c, provider: e.target.value })}>
+            <option value="auto">Auto (writing order above)</option>
+            {slots.filter((s) => s.textModel).map((s) => (
+              <option key={s.id} value={s.id}>{s.label} · {s.textModel}</option>
+            ))}
+          </select>
+          <p className="mt-1 text-[11px] text-faint">Tip: a free model (e.g. Gemini Flash-Lite or OpenRouter free) keeps the chat at no cost.</p>
+        </div>
+        <div className="md:col-span-2">
+          <label htmlFor="chat-notes" className="mb-1 block text-xs text-muted">Extra facts or rules for the assistant (optional)</label>
+          <textarea id="chat-notes" rows={3} className={inputCls} maxLength={2000} value={c.notes} onChange={(e) => setC({ ...c, notes: e.target.value })} placeholder="e.g. Open to data-science internships from May 2027. Prefer email for collaboration requests." />
+        </div>
+        <div>
+          <label htmlFor="chat-ip" className="mb-1 block text-xs text-muted">Questions per visitor per hour</label>
+          <input id="chat-ip" type="number" min={1} max={100} className={inputCls} value={c.perVisitorHourly} onChange={(e) => setC({ ...c, perVisitorHourly: Math.max(1, Math.min(100, Number(e.target.value) || 1)) })} />
+        </div>
+        <div>
+          <label htmlFor="chat-day" className="mb-1 block text-xs text-muted">Questions per day for the whole site</label>
+          <input id="chat-day" type="number" min={1} max={5000} className={inputCls} value={c.dailyCap} onChange={(e) => setC({ ...c, dailyCap: Math.max(1, Math.min(5000, Number(e.target.value) || 1)) })} />
+          <p className="mt-1 text-[11px] text-faint">Protects your API quota. You (signed in) are never limited.</p>
+        </div>
+      </div>
+      <div className="mt-5 flex justify-end">
+        <Button onClick={save} loading={saving} disabled={!dirty || (c.mode !== "off" && slots.length === 0)}>
+          <Save className="size-4" aria-hidden /> Save chat settings
+        </Button>
       </div>
     </Card>
   );

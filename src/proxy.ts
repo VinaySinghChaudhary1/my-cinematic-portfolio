@@ -57,13 +57,15 @@ export async function proxy(request: NextRequest) {
   requestHeaders.set("Content-Security-Policy", csp);
   const response = NextResponse.next({ request: { headers: requestHeaders } });
   response.headers.set("Content-Security-Policy", csp);
+  // Personal views (signed-in admin, beta tester, drafts preview) must not be kept by the offline cache (public/sw.js).
+  if (["pf_session", "pf_beta", "pf_preview"].some((c) => request.cookies.has(c))) response.headers.set("x-sw-cache", "no");
   return response;
 }
 
 export const config = {
   matcher: [
     {
-      source: "/((?!api|media|demo|me/|_next/static|_next/image|favicon.ico|icon.svg|robots.txt|sitemap.xml).*)",
+      source: "/((?!api|media|demo|me/|_next/static|_next/image|favicon.ico|icon.svg|apple-icon.png|icons/|sw.js|manifest.webmanifest|robots.txt|sitemap.xml).*)",
       missing: [
         { type: "header", key: "next-router-prefetch" },
         { type: "header", key: "purpose", value: "prefetch" },

@@ -106,7 +106,9 @@ With fallback on, the next provider takes over. If every provider fails, the mes
 - **SVG:** generated SVG is cleaned (no scripts, links or external content) and converted to a WebP image before it's stored.
 - **What is sent:** only what you type or attach is sent to the provider. Your messages, database and keys never are.
 
-## Planned
+## Bulk import and "Ask about me" chat (v1.5)
 
-- **Bulk import:** paste a résumé or LinkedIn export to get a checklist of new entries across all sections (a snapshot is taken first).
-- **Public "Ask about me" chat** for visitors. It will be off by default.
+- **Admin → Bulk import:** a résumé (PDF, photo or pasted text) is read by your providers in the usual order. The result is a review list across Experience, Education, Projects, Skills, Certifications and Achievements. Usage task: `import`.
+- **"Ask about me" chat:** set it up at the bottom of this page. It's off by default; you can turn it on for beta testers and yourself first. It answers only from published content and never stores conversations. Usage task: `chat`.
+
+Full guide: [`EMAIL-AND-ACCESS.md`](EMAIL-AND-ACCESS.md) (sections 6 and 7).

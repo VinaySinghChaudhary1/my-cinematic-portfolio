@@ -28,6 +28,7 @@ const file = args.find((a) => !a.startsWith("--")) ?? "content/vinay.json";
 
 async function exportCurrent(label: string) {
   const { db, schema } = await import("../src/db/index");
+  const { itemMeta } = await import("../src/lib/content-import");
   const secs = await db.select().from(schema.sections);
   const its = await db.select().from(schema.items);
   const { SETTINGS_GROUPS } = await import("../src/lib/settings-def");
@@ -46,11 +47,12 @@ async function exportCurrent(label: string) {
         subtitle: s.subtitle,
         enabled: s.enabled,
         showInNav: s.showInNav,
+        ...(s.audience === "beta" ? { audience: "beta" } : {}),
         config: JSON.parse(s.config),
         items: its
           .filter((i) => i.sectionKey === s.key)
           .sort((a, b) => a.sortOrder - b.sortOrder)
-          .map((i) => ({ ...(i.featured ? { featured: true } : {}), ...(i.visible ? {} : { visible: false }), ...JSON.parse(i.data) })),
+          .map((i) => ({ ...itemMeta(i), ...JSON.parse(i.data) })),
       })),
   };
   const dir = path.join(root, "content", "backups");
@@ -130,6 +132,7 @@ async function main() {
         subtitle: s.subtitle,
         enabled: s.enabled,
         showInNav: s.showInNav,
+        audience: s.audience,
         sortOrder: order++,
         config: JSON.stringify(s.config),
         updatedAt: t,
@@ -142,6 +145,8 @@ async function main() {
           data: JSON.stringify(it.data),
           visible: it.visible,
           featured: it.featured,
+          status: it.status,
+          publishAt: it.publishAt,
           sortOrder: i,
           createdAt: t + i,
           updatedAt: t + i,

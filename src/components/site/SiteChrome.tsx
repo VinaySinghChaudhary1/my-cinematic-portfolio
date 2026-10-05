@@ -4,6 +4,7 @@ import { Preloader } from "./Preloader";
 import { CustomCursor } from "./CustomCursor";
 import { SmoothScroll } from "./SmoothScroll";
 import { OfflineBanner } from "./OfflineBanner";
+import { ServiceWorker } from "./ServiceWorker";
 
 const Galaxy = dynamic(() => import("./GalaxyBackground"), { ssr: false });
 
@@ -30,6 +31,7 @@ export function SiteChrome(p: {
       <div className="vignette" aria-hidden />
       {p.grain && <div className="grain" aria-hidden />}
       <OfflineBanner />
+      <ServiceWorker />
     </>
   );
 }

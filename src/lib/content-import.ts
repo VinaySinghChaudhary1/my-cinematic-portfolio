@@ -5,7 +5,8 @@
  * The content file is plain JSON (see content/README.md):
  *   { settings: { profile: {...}, socials: {...}, ... },
  *     sections: [ { key, type, title, subtitle, enabled, showInNav?, config: {...}, items: [ {...}, ... ] } ] }
- * Each item may carry `"featured": true` and `"visible": false`; everything else is validated against
+ * Each item may carry `"featured": true`, `"visible": false`, `"draft": true` and `"publishAt": <ms or ISO date>`
+ * (scheduled); a section may carry `"audience": "beta"` (testers only). Everything else is validated against
  * the section's field definitions in the registry (unknown keys are dropped, bad values are reported).
  */
 import { getSectionType } from "./registry";
@@ -16,6 +17,8 @@ export interface ImportedItem {
   data: Record<string, unknown>;
   featured: boolean;
   visible: boolean;
+  status: "published" | "draft";
+  publishAt: number | null;
 }
 export interface ImportedSection {
   key: string;
@@ -24,6 +27,7 @@ export interface ImportedSection {
   subtitle: string;
   enabled: boolean;
   showInNav: boolean;
+  audience: "public" | "beta";
   config: Record<string, unknown>;
   items: ImportedItem[];
 }
@@ -42,6 +46,27 @@ export function collectAssets(v: unknown, out: Set<string>) {
     if (/^\/(me|demo)\//.test(v)) out.add(v);
   } else if (Array.isArray(v)) v.forEach((x) => collectAssets(x, out));
   else if (isObj(v)) Object.values(v).forEach((x) => collectAssets(x, out));
+}
+
+/** publishAt in a content file: null/absent → null, number (ms) or ISO string → ms, anything else → undefined (error). */
+export function parseWhen(v: unknown): number | null | undefined {
+  if (v === undefined || v === null || v === "") return null;
+  if (typeof v === "number" && Number.isFinite(v) && v > 0) return Math.round(v);
+  if (typeof v === "string") {
+    const t = Date.parse(v);
+    if (Number.isFinite(t)) return t;
+  }
+  return undefined;
+}
+
+/** Item meta keys written next to the fields when exporting (inverse of parseContent). */
+export function itemMeta(i: { featured: boolean; visible: boolean; status: string; publishAt: number | null }) {
+  return {
+    ...(i.featured ? { featured: true } : {}),
+    ...(i.visible ? {} : { visible: false }),
+    ...(i.status === "draft" ? { draft: true } : {}),
+    ...(i.publishAt ? { publishAt: new Date(i.publishAt).toISOString() } : {}),
+  };
 }
 
 export function parseContent(input: unknown): { ok: true; content: ImportedContent } | { ok: false; errors: string[] } {
@@ -93,10 +118,12 @@ export function parseContent(input: unknown): { ok: true; content: ImportedConte
         const schema = schemaFromFields(def.itemFields);
         rawItems.forEach((it, ii) => {
           if (!isObj(it)) return void errors.push(`${label}.items[${ii}]: must be an object`);
-          const { featured, visible, ...rest } = it;
+          const { featured, visible, draft, publishAt, ...rest } = it;
+          const when = parseWhen(publishAt);
+          if (when === undefined) errors.push(`${label}.items[${ii}].publishAt: use a date like "2026-11-01T09:00" or a timestamp`);
           const r = schema.safeParse(rest);
           if (!r.success) r.error.issues.forEach((i) => errors.push(`${label}.items[${ii}].${i.path.join(".")}: ${i.message}`));
-          else items.push({ data: r.data as Record<string, unknown>, featured: featured === true, visible: visible !== false });
+          else items.push({ data: r.data as Record<string, unknown>, featured: featured === true, visible: visible !== false, status: draft === true ? "draft" : "published", publishAt: when ?? null });
         });
       }
 
@@ -108,6 +135,7 @@ export function parseContent(input: unknown): { ok: true; content: ImportedConte
           subtitle: String(s.subtitle ?? "").slice(0, 200),
           enabled: s.enabled !== false,
           showInNav: typeof s.showInNav === "boolean" ? s.showInNav : type !== "hero",
+          audience: s.audience === "beta" ? "beta" : "public",
           config: cfg.data as Record<string, unknown>,
           items,
         });

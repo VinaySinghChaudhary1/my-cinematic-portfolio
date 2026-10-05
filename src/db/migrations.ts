@@ -34,4 +34,25 @@ export const MIGRATIONS: string[] = [
     input_tokens INTEGER NOT NULL DEFAULT 0, output_tokens INTEGER NOT NULL DEFAULT 0,
     ok INTEGER NOT NULL, error TEXT NOT NULL DEFAULT '', created_at INTEGER NOT NULL)`,
   `CREATE INDEX IF NOT EXISTS ai_usage_created_idx ON ai_usage(created_at)`,
+  `CREATE TABLE IF NOT EXISTS testers (
+    id TEXT PRIMARY KEY, name TEXT NOT NULL, username TEXT NOT NULL UNIQUE, email TEXT NOT NULL DEFAULT '',
+    phone TEXT NOT NULL DEFAULT '', password_hash TEXT NOT NULL, can_see_drafts INTEGER NOT NULL DEFAULT 1,
+    note TEXT NOT NULL DEFAULT '', expires_at INTEGER, revoked_at INTEGER, session_version INTEGER NOT NULL DEFAULT 1,
+    failed_attempts INTEGER NOT NULL DEFAULT 0, locked_until INTEGER, last_seen_at INTEGER, google_sub TEXT,
+    created_at INTEGER NOT NULL)`,
+  `CREATE TABLE IF NOT EXISTS auth_tokens (
+    id TEXT PRIMARY KEY, kind TEXT NOT NULL, subject_id TEXT NOT NULL, purpose TEXT NOT NULL,
+    token_hash TEXT NOT NULL UNIQUE, expires_at INTEGER NOT NULL, used_at INTEGER, created_at INTEGER NOT NULL)`,
+];
+
+/**
+ * Columns added after the first release. SQLite has no "ADD COLUMN IF NOT EXISTS", so each statement
+ * is tried once per cold start and a "duplicate column" error simply means it already ran.
+ */
+export const COLUMN_MIGRATIONS: string[] = [
+  `ALTER TABLE users ADD COLUMN google_sub TEXT`,
+  `ALTER TABLE users ADD COLUMN google_email TEXT`,
+  `ALTER TABLE sections ADD COLUMN audience TEXT NOT NULL DEFAULT 'public'`,
+  `ALTER TABLE items ADD COLUMN status TEXT NOT NULL DEFAULT 'published'`,
+  `ALTER TABLE items ADD COLUMN publish_at INTEGER`,
 ];

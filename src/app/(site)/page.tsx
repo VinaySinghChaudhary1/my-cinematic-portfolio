@@ -3,6 +3,7 @@ import { SectionRenderer } from "@/components/site/SectionRenderer";
 import { EmptyState } from "@/components/ui/States";
 import { PreviewBanner } from "@/components/site/PreviewBanner";
 import { getCurrentUser } from "@/lib/server/auth";
+import { getViewer } from "@/lib/server/viewer";
 import { layoutsFor } from "@/lib/layouts";
 
 /**
@@ -23,7 +24,7 @@ async function previewOverrides(raw: string | string[] | undefined): Promise<Rec
 }
 
 export default async function HomePage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const site = await getPublicSite();
+  const site = await getPublicSite((await getViewer()).mode);
   const overrides = await previewOverrides((await searchParams).preview);
   const settings = site.settings;
   const sections = site.sections.map((s) =>

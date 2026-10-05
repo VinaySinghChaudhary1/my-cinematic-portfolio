@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowUp, ArrowDown, Pencil, Menu as MenuIcon } from "lucide-react";
+import { ArrowUp, ArrowDown, Pencil, Menu as MenuIcon, FlaskConical } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { api } from "./api";
@@ -15,6 +15,7 @@ interface Row {
   description: string;
   enabled: boolean;
   showInNav: boolean;
+  audience: string;
   itemCount: number;
   hasItems: boolean;
   layoutLabel: string;
@@ -27,7 +28,7 @@ export function SectionsManager({ initial }: { initial: Row[] }) {
   const [saving, setSaving] = useState(false);
   const [pending, setPending] = useState<string | null>(null);
 
-  async function patch(key: string, body: Partial<Pick<Row, "enabled" | "showInNav">>) {
+  async function patch(key: string, body: Partial<Pick<Row, "enabled" | "showInNav" | "audience">>) {
     const prev = rows;
     setRows((r) => r.map((x) => (x.key === key ? { ...x, ...body } : x)));
     setPending(key);
@@ -35,6 +36,7 @@ export function SectionsManager({ initial }: { initial: Row[] }) {
       await api(`/api/admin/sections/${key}`, { method: "PATCH", json: body });
       const row = rows.find((r) => r.key === key);
       if (body.enabled !== undefined) toast.success(`${row?.title} is now ${body.enabled ? "visible" : "hidden"} on your site`);
+      else if (body.audience !== undefined) toast.success(body.audience === "beta" ? `${row?.title} is now visible to beta testers only` : `${row?.title} is now public`);
       else toast.success("Menu updated");
     } catch (e) {
       setRows(prev); // roll back optimistic update
@@ -103,6 +105,7 @@ export function SectionsManager({ initial }: { initial: Row[] }) {
                       🎨 {r.layoutLabel}
                     </span>
                   )}
+                  {r.audience === "beta" && <span className="rounded-md border border-warn/30 bg-warn/10 px-2 py-0.5 text-[11px] text-warn">Beta testers only</span>}
                   {r.hasItems && <span className="text-xs text-faint">{r.itemCount} entr{r.itemCount === 1 ? "y" : "ies"}</span>}
                 </p>
                 <p className="mt-0.5 truncate text-sm text-muted">{r.description}</p>
@@ -118,6 +121,10 @@ export function SectionsManager({ initial }: { initial: Row[] }) {
                     <MenuIcon className="size-4" aria-hidden /> Menu
                   </label>
                 )}
+                <label className="flex items-center gap-2 text-sm text-muted" title="Only beta testers (and you) see this section — test it before launch">
+                  <Switch checked={r.audience === "beta"} onChange={(v) => patch(r.key, { audience: v ? "beta" : "public" })} label={`${r.title}: beta testers only`} disabled={pending === r.key || !r.enabled} />
+                  <FlaskConical className="size-4" aria-hidden /> Beta
+                </label>
                 <Link href={`/admin/sections/${r.key}`} className="inline-flex items-center gap-2 rounded-xl border border-line px-4 py-2 text-sm text-ink hover:border-accent">
                   <Pencil className="size-4" aria-hidden /> Edit
                 </Link>

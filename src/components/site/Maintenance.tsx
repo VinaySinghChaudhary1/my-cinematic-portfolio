@@ -13,6 +13,12 @@ export function Maintenance({ name, message, socials }: { name: string; message:
         <h1 className="mt-3 font-display text-4xl font-semibold text-ink sm:text-5xl">{name} will be right back</h1>
         <p className="mt-4 text-muted">{message}</p>
         <SocialLinks socials={socials} className="mt-8 justify-center" />
+        <p className="mt-10 text-xs text-faint">
+          Beta tester?{" "}
+          <a href="/beta" className="text-accent-2 hover:underline">
+            Sign in to preview
+          </a>
+        </p>
       </div>
     </main>
   );

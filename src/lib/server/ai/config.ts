@@ -60,14 +60,51 @@ export interface AiConfig {
   /** Try the next provider when one fails (quota, overloaded, wrong model, can't read PDFs…). */
   fallback: boolean;
   styleNotes: string;
-  publicChat: boolean; // "Ask about me" — planned, always off for now
+  /** "Ask about me" chat for visitors. */
+  chat: ChatConfig;
   /** @deprecated v1.4.0/1 single choice — migrated into textOrder/imageOrder. */
   textProvider?: string;
   imageProvider?: string;
 }
 
+export const CHAT_MODES = ["off", "beta", "public"] as const;
+export interface ChatConfig {
+  /** off · beta (only testers and you) · public (every visitor) */
+  mode: (typeof CHAT_MODES)[number];
+  greeting: string;
+  /** Extra facts or rules you want the assistant to know (e.g. "I'm open to internships from May 2027"). */
+  notes: string;
+  /** "auto" = the writing order above, or one provider slot (handy to keep the chat on a free model). */
+  provider: string;
+  /** Questions one visitor (IP) may ask per hour. */
+  perVisitorHourly: number;
+  /** Questions for the whole site per day — protects your API quota. */
+  dailyCap: number;
+}
+export const DEFAULT_CHAT: ChatConfig = {
+  mode: "off",
+  greeting: "Hi! Ask me anything about my studies, projects or skills.",
+  notes: "",
+  provider: "auto",
+  perVisitorHourly: 12,
+  dailyCap: 200,
+};
+
+export function normalizeChat(raw: unknown): ChatConfig {
+  const c = (raw && typeof raw === "object" ? raw : {}) as Partial<ChatConfig>;
+  const int = (v: unknown, d: number, lo: number, hi: number) => (typeof v === "number" && Number.isFinite(v) ? Math.min(hi, Math.max(lo, Math.round(v))) : d);
+  return {
+    mode: (CHAT_MODES as readonly string[]).includes(String(c.mode)) ? (c.mode as ChatConfig["mode"]) : "off",
+    greeting: typeof c.greeting === "string" && c.greeting.trim() ? c.greeting.slice(0, 200) : DEFAULT_CHAT.greeting,
+    notes: typeof c.notes === "string" ? c.notes.slice(0, 2000) : "",
+    provider: typeof c.provider === "string" && (c.provider === "auto" || isSlotId(c.provider)) ? c.provider : "auto",
+    perVisitorHourly: int(c.perVisitorHourly, DEFAULT_CHAT.perVisitorHourly, 1, 100),
+    dailyCap: int(c.dailyCap, DEFAULT_CHAT.dailyCap, 1, 5000),
+  };
+}
+
 const KEY = "ai_config";
-const EMPTY: AiConfig = { providers: {}, textOrder: [], imageOrder: [], fallback: true, styleNotes: "", publicChat: false };
+const EMPTY: AiConfig = { providers: {}, textOrder: [], imageOrder: [], fallback: true, styleNotes: "", chat: DEFAULT_CHAT };
 
 export const isSlotId = (id: string) => /^(anthropic|gemini|openai|compatible|c-[a-z0-9]{6})$/.test(id);
 
@@ -113,7 +150,8 @@ export function normalizeConfig(raw: Partial<AiConfig> & Record<string, unknown>
   cfg.textOrder = [...new Set(cfg.textOrder.filter((id) => ids.includes(id)))];
   cfg.imageOrder = [...new Set(cfg.imageOrder.filter((id) => id === "svg" || (ids.includes(id) && KIND_INFO[cfg.providers[id].kind].canImage)))];
   cfg.fallback = raw.fallback === undefined ? true : !!raw.fallback;
-  cfg.publicChat = false;
+  cfg.chat = normalizeChat(raw.chat);
+  delete (cfg as unknown as Record<string, unknown>).publicChat;
   delete cfg.textProvider;
   delete cfg.imageProvider;
   return cfg;
@@ -158,7 +196,7 @@ export function publicAiConfig(cfg: AiConfig) {
     baseUrl: c.baseUrl,
     ...capabilities(c),
   }));
-  return { slots, textOrder: cfg.textOrder, imageOrder: cfg.imageOrder, fallback: cfg.fallback, styleNotes: cfg.styleNotes, publicChat: false, info: KIND_INFO, presets: COMPATIBLE_PRESETS };
+  return { slots, textOrder: cfg.textOrder, imageOrder: cfg.imageOrder, fallback: cfg.fallback, styleNotes: cfg.styleNotes, chat: cfg.chat, info: KIND_INFO, presets: COMPATIBLE_PRESETS };
 }
 
 export function newCompatibleId(cfg: AiConfig): ProviderId {

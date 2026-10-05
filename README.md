@@ -27,7 +27,7 @@
 
 | | |
 |---|---|
-| **Version** | `v1.4.2` — personal content · Backup & Restore · deploy anywhere · **AI assistant** (Claude / Gemini / OpenAI / OpenRouter & any OpenAI-compatible, your own keys, automatic fallback) ✅ |
+| **Version** | `v1.5.0` — personal content · Backup & Restore · deploy anywhere · AI assistant · **beta testers, Google sign-in, password reset & email alerts, drafts & scheduling, installable app, bulk import, “Ask about me” chat** ✅ |
 | **Content** | Live content of Vinay Singh Chaudhary in [`content/vinay.json`](content/vinay.json) (`npm run content:apply`). New users still start from neutral demo data with `npm run setup`. |
 | **Designs** | **43 layouts** across 13 sections — switch any section's design from the admin, preview before saving |
 | **Quality** | TypeScript ✔ · ESLint ✔ · 55 unit tests ✔ (incl. backup → restore → undo, AI adapters & safety) · production build ✔ · every layout checked at 390 / 768 / 1440 px ✔ |
@@ -61,7 +61,10 @@
 - **Media library** — drag‑and‑drop photos & PDFs, automatic resize, alt text
 - **Messages inbox** for the contact form
 - **Site settings** — profile, résumé, socials, accent colours, effects, SEO, maintenance mode, privacy notice
-- **Account security** — change password, sign out everywhere, activity log
+- **Account security** — change password, forgot-password email, Google sign-in, sign out everywhere, activity log
+- **Drafts & scheduled publishing** for every entry
+- **Beta testers** — logins by email or WhatsApp invite; they preview the site during maintenance and beta-only sections
+- **Bulk import** from a résumé (AI) or a LinkedIn export
 
 </td>
 </tr>
@@ -409,6 +412,17 @@ Connect **Claude, Gemini, OpenAI** and as many **OpenAI-compatible** services as
 
 ---
 
+## 🔑 Access, email & beta (v1.5)
+
+- **Beta testers** — Admin → Beta testers creates a login and sends it by email or WhatsApp; testers see the site during maintenance, beta-only sections and (optionally) drafts, and send feedback
+- **Forgot password** & **"password changed"** emails, **new-message alerts** — via [Resend](https://resend.com) (optional `RESEND_API_KEY`)
+- **Continue with Google** for you and your testers (optional `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`)
+- **Drafts & scheduling** · **installable app with offline cache** · **bulk import** from résumé/LinkedIn · **"Ask about me" chat** (off until you switch it on)
+
+📄 Setup: **[`docs/EMAIL-AND-ACCESS.md`](docs/EMAIL-AND-ACCESS.md)**
+
+---
+
 ## 💾 Backups
 
 **Admin → Backups** saves the whole website in one file — every section, item and chosen design, site settings, uploaded media, the bundled photos/video/certificates, and (optionally) contact messages and the activity log.
@@ -513,10 +527,10 @@ Found a security issue? Please open a private security advisory on GitHub instea
 - [x] **Stage 2 — Personalise:** real photos, bio, education, projects, certificates (v1.2.0) — privacy notice still to write in Admin → Settings
 - [x] **v1.3 — Backup & deploy anywhere:** full-site backup/restore/undo, schedules, Docker, VPS, Hostinger, S3/R2 storage
 - [x] **v1.4 — AI assistant:** fill any form, write/polish text, generate logos/icons/covers with your own Claude / Gemini / OpenAI key
-- [ ] **v1.5 — AI bulk import & “Ask about me” chat (off by default)**
-- [ ] **Stage 3 — Launch:** custom domain, search indexing
-- [ ] **Stage 4 — Grow:** built‑in blog editor, GitHub/LeetCode stats, email alerts, analytics, two‑factor login
-- [ ] **Stage 5 — Future‑ready:** theme presets, 3D avatar, AI “ask me anything”, multi‑language
+- [x] **v1.5 — Access & content tools:** beta testers, Google sign-in, password reset & email alerts, drafts & scheduling, installable app, bulk import, “Ask about me” chat
+- [x] **Stage 3 — Launch:** custom domain on Vercel
+- [ ] **Stage 4 — Grow:** built‑in blog editor, GitHub/LeetCode stats, analytics, two‑factor login
+- [ ] **Stage 5 — Future‑ready:** theme presets, 3D avatar, multi‑language
 
 See [`CHANGELOG.md`](CHANGELOG.md) for what changed in each version.
 

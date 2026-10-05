@@ -4,10 +4,12 @@ import { getCurrentUser } from "@/lib/server/auth";
 import { getSettings } from "@/lib/server/content";
 import { safeAdminReturnPath } from "@/lib/validation";
 import { LoginForm } from "@/components/admin/LoginForm";
+import { googleConfigured } from "@/lib/server/google";
+import { AUTH_ERRORS } from "@/components/auth/AuthShell";
 
 export const metadata = { title: "Admin sign in", robots: { index: false, follow: false } };
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; reason?: string }> }) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; reason?: string; error?: string }> }) {
   const sp = await searchParams;
   const next = safeAdminReturnPath(sp.next);
   if (await getCurrentUser()) redirect(next);
@@ -23,7 +25,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <h1 className="mt-5 font-display text-2xl font-semibold text-ink">Portfolio control room</h1>
           <p className="mt-1 text-sm text-muted">Sign in to manage {s.profile.name}&apos;s site</p>
         </div>
-        <LoginForm next={next} expired={sp.reason === "expired"} />
+        <LoginForm next={next} expired={sp.reason === "expired"} google={googleConfigured()} notice={sp.error ? AUTH_ERRORS[sp.error] : undefined} />
         <p className="mt-6 text-center text-xs text-faint">
           <Link href="/" className="hover:text-ink">← Back to the website</Link>
         </p>
