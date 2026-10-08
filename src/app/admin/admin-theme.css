@@ -1,0 +1,97 @@
+/*
+ * Admin colour theme (Light / Dark / Auto) — loaded only by the admin panel.
+ * AdminShell renders <div data-admin-theme="light|dark|system">; the choice is kept in the pf_admin_theme cookie so the
+ * server renders the right theme on first paint (no flash). Dark = the default design tokens from globals.css.
+ * The light theme only re-maps colour variables, so every admin component follows automatically.
+ */
+[data-admin-theme="dark"] {
+  --admin-canvas: #07060f;
+  background-color: var(--admin-canvas);
+}
+
+[data-admin-theme="light"] {
+    color-scheme: light;
+    --color-bg: #f6f5fb;
+    --color-bg-2: #ffffff;
+    --color-ink: #171430;
+    --color-muted: #4d4a66;
+    --color-faint: #78759a;
+    --color-line: rgb(23 20 48 / 0.12);
+    --color-glass: rgb(23 20 48 / 0.04);
+    /* white/black tints (bg-white/5, bg-black/30 …) flip so hovers, chips and inputs stay visible */
+    --color-white: #171430;
+    --color-black: #ffffff;
+    --color-accent: color-mix(in oklab, var(--accent, #8b5cf6) 88%, #0b0a1a);
+    --color-accent-2: color-mix(in oklab, var(--accent-2, #22d3ee) 60%, #0b0a1a);
+    --color-danger: #e11d48;
+    --color-success: #047857;
+    --color-warn: #b45309;
+    --admin-canvas: #f1f0f7;
+    background-color: var(--admin-canvas);
+    color: var(--color-ink);
+    /* things that must stay literally white / black */
+    & .text-white { color: #fff; }
+    & .bg-white { background-color: #fff; }
+    & .text-black { color: #000; }
+    & .bg-black\/70 { background-color: rgb(0 0 0 / 0.65); }
+    & .backdrop\:bg-black\/75::backdrop { background-color: rgb(17 15 35 / 0.45); }
+    /* cards and panels: white on the light-grey canvas */
+    & .bg-white\/\[0\.025\] { background-color: #fff; box-shadow: 0 1px 2px rgb(23 20 48 / 0.04); }
+    & .glass { background: rgb(255 255 255 / 0.9); }
+    & .\[color-scheme\:dark\] { color-scheme: light; }
+    & ::selection { color: #fff; }
+}
+
+@media (prefers-color-scheme: light) {
+  [data-admin-theme="system"] {
+    color-scheme: light;
+    --color-bg: #f6f5fb;
+    --color-bg-2: #ffffff;
+    --color-ink: #171430;
+    --color-muted: #4d4a66;
+    --color-faint: #78759a;
+    --color-line: rgb(23 20 48 / 0.12);
+    --color-glass: rgb(23 20 48 / 0.04);
+    /* white/black tints (bg-white/5, bg-black/30 …) flip so hovers, chips and inputs stay visible */
+    --color-white: #171430;
+    --color-black: #ffffff;
+    --color-accent: color-mix(in oklab, var(--accent, #8b5cf6) 88%, #0b0a1a);
+    --color-accent-2: color-mix(in oklab, var(--accent-2, #22d3ee) 60%, #0b0a1a);
+    --color-danger: #e11d48;
+    --color-success: #047857;
+    --color-warn: #b45309;
+    --admin-canvas: #f1f0f7;
+    background-color: var(--admin-canvas);
+    color: var(--color-ink);
+    /* things that must stay literally white / black */
+    & .text-white { color: #fff; }
+    & .bg-white { background-color: #fff; }
+    & .text-black { color: #000; }
+    & .bg-black\/70 { background-color: rgb(0 0 0 / 0.65); }
+    & .backdrop\:bg-black\/75::backdrop { background-color: rgb(17 15 35 / 0.45); }
+    /* cards and panels: white on the light-grey canvas */
+    & .bg-white\/\[0\.025\] { background-color: #fff; box-shadow: 0 1px 2px rgb(23 20 48 / 0.04); }
+    & .glass { background: rgb(255 255 255 / 0.9); }
+    & .\[color-scheme\:dark\] { color-scheme: light; }
+    & ::selection { color: #fff; }
+  }
+}
+@media not (prefers-color-scheme: light) {
+  [data-admin-theme="system"] {
+    --admin-canvas: #07060f;
+    background-color: var(--admin-canvas);
+  }
+}
+
+/* page background behind the panel (overscroll, short pages) follows the resolved theme */
+html[data-admin-resolved="light"],
+html[data-admin-resolved="light"] body {
+  background: #f1f0f7;
+  color-scheme: light;
+}
+
+/* smooth switch, but never animate on first paint */
+[data-admin-theme].theme-anim,
+[data-admin-theme].theme-anim * {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.2s ease !important;
+}

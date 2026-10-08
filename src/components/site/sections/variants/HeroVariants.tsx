@@ -246,64 +246,101 @@ export function HeroSplit(props: SectionProps) {
 }
 
 /* ───────────── Cinematic letterbox ───────────── */
+/** null until mounted (SSR), then whether the screen is taller than wide (phones, portrait tablets). */
+function usePortrait() {
+  const [portrait, setPortrait] = useState<boolean | null>(null);
+  useEffect(() => {
+    const mq = window.matchMedia("(orientation: portrait)");
+    const on = () => setPortrait(mq.matches);
+    on();
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+  return portrait;
+}
+
+/**
+ * Wide screens: full-bleed video behind a giant title, between letterbox bars.
+ * Portrait screens (phones, upright tablets): a wide video cropped to a tall screen only shows a slice of it, so the
+ * whole frame is shown as a "cinema screen" above the title, over a soft blurred copy of itself.
+ * Only one <video> is ever mounted (chosen after hydration); the poster image covers the first paint on every screen.
+ */
 export function HeroCinematic(props: SectionProps) {
   const { section, settings } = props;
   const { p, roles, cta, resume, c, photo } = useHeroData(props);
   const reduce = useReducedMotion();
+  const portrait = usePortrait();
+  const video = str(c.backgroundVideo);
+  const poster = str(c.videoPoster) || photo;
+  const playVideo = !!video && !reduce;
+  const ease = [0.16, 1, 0.3, 1] as const;
   return (
-    <section id={section.key} aria-label="Introduction" className="relative z-10 flex min-h-[100svh] items-center justify-center overflow-hidden">
-      <motion.div
-        aria-hidden
-        className="absolute inset-0"
-        initial={reduce ? false : { scale: 1.25, opacity: 0 }}
-        animate={{ scale: 1.05, opacity: 1 }}
-        transition={{ duration: 2.4, ease: [0.16, 1, 0.3, 1] }}
-      >
-        {str(c.backgroundVideo) && !reduce ? (
-          <video
-            className="size-full object-cover object-[30%_20%] opacity-55"
-            src={str(c.backgroundVideo)}
-            poster={str(c.videoPoster) || photo}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="metadata"
-          />
+    <section
+      id={section.key}
+      aria-label="Introduction"
+      className="relative z-10 flex min-h-[100svh] items-center justify-center overflow-hidden"
+    >
+      {/* backdrop */}
+      <motion.div aria-hidden className="absolute inset-0" initial={reduce ? false : { scale: 1.25, opacity: 0 }} animate={{ scale: 1.05, opacity: 1 }} transition={{ duration: 2.4, ease }}>
+        {/* wide screens: the full-bleed picture */}
+        {playVideo ? (
+          <div className="absolute inset-0 opacity-55 portrait:hidden">
+            <img src={poster} alt="" className="absolute inset-0 size-full object-cover object-[30%_20%]" />
+            {portrait === false && <video className="absolute inset-0 size-full object-cover object-[30%_20%]" src={video} poster={poster} autoPlay muted loop playsInline preload="metadata" />}
+          </div>
         ) : (
-          <img src={str(c.videoPoster) || photo} alt="" className="size-full object-cover object-top opacity-40 blur-[2px] grayscale-[30%]" />
+          <img src={poster} alt="" className="absolute inset-0 size-full object-cover object-top opacity-40 blur-[2px] grayscale-[30%] portrait:hidden" />
         )}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_10%,var(--color-bg)_75%)]" />
+        {/* portrait screens: soft ambient glow made from the same picture */}
+        <img src={poster} alt="" className="absolute inset-0 hidden size-full scale-125 object-cover opacity-30 blur-2xl portrait:block" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_10%,var(--color-bg)_75%)] portrait:bg-[radial-gradient(ellipse_at_50%_30%,transparent_0%,var(--color-bg)_80%)]" />
         <div className="absolute inset-0 bg-gradient-to-b from-bg/40 via-bg/30 to-bg" />
       </motion.div>
-      {/* letterbox bars */}
-      <motion.div aria-hidden className="absolute inset-x-0 top-0 z-10 h-[9vh] bg-black" initial={reduce ? false : { y: "-100%" }} animate={{ y: 0 }} transition={{ duration: 1.1, ease: [0.76, 0, 0.24, 1] }} />
-      <motion.div aria-hidden className="absolute inset-x-0 bottom-0 z-10 h-[9vh] bg-black" initial={reduce ? false : { y: "100%" }} animate={{ y: 0 }} transition={{ duration: 1.1, ease: [0.76, 0, 0.24, 1] }} />
 
-      <div className="container-x relative z-20 py-32 text-center">
+      {/* letterbox bars (thinner on portrait screens so they never cover content) */}
+      <motion.div aria-hidden className="absolute inset-x-0 top-0 z-10 h-[9vh] bg-black portrait:h-[4svh]" initial={reduce ? false : { y: "-100%" }} animate={{ y: 0 }} transition={{ duration: 1.1, ease: [0.76, 0, 0.24, 1] }} />
+      <motion.div aria-hidden className="absolute inset-x-0 bottom-0 z-10 h-[9vh] bg-black portrait:h-[4svh]" initial={reduce ? false : { y: "100%" }} animate={{ y: 0 }} transition={{ duration: 1.1, ease: [0.76, 0, 0.24, 1] }} />
+
+      <div className="container-x relative z-20 w-full py-32 text-center portrait:pb-[calc(4svh+2.5rem)] portrait:pt-[calc(4svh+4.75rem)] [@media(max-height:520px)_and_(orientation:landscape)]:py-20">
+        {/* portrait screens: the whole frame, like a cinema screen */}
+        <motion.figure
+          aria-hidden
+          className="relative mx-auto mb-7 hidden w-full max-w-2xl overflow-hidden rounded-2xl border border-white/10 bg-bg-2 shadow-[0_30px_80px_-30px_var(--accent)] portrait:block"
+          initial={reduce ? false : { opacity: 0, y: 24, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 1.4, delay: 0.3, ease }}
+        >
+          <img src={poster} alt="" className="block h-auto w-full" />
+          {playVideo && portrait === true && (
+            <video className="absolute inset-0 size-full object-cover" src={video} poster={poster} autoPlay muted loop playsInline preload="metadata" />
+          )}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-bg/70 via-transparent to-transparent" />
+          <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/10" />
+        </motion.figure>
+
         <motion.p initial={reduce ? false : { opacity: 0, letterSpacing: "0.8em" }} animate={{ opacity: 1, letterSpacing: "0.32em" }} transition={{ duration: 1.6, delay: 0.6 }} className="font-mono text-xs uppercase text-accent-2 sm:text-sm">
           {p.headline || str(c.greeting) || "Presenting"}
         </motion.p>
         <motion.h1
           initial={reduce ? false : { opacity: 0, scale: 1.12, filter: "blur(14px)" }}
           animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-          transition={{ duration: 1.6, delay: 0.9, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-6 font-display text-[clamp(3.2rem,12vw,10rem)] font-bold uppercase leading-[0.85] tracking-[-0.04em] text-gradient"
+          transition={{ duration: 1.6, delay: 0.9, ease }}
+          className="mt-6 break-words font-display text-[clamp(2.6rem,12vw,10rem)] font-bold uppercase leading-[0.85] tracking-[-0.04em] text-gradient portrait:mt-4 portrait:text-[clamp(2.4rem,11.5vw,6.5rem)]"
         >
           {p.name}
         </motion.h1>
         <motion.div initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.8, duration: 1 }}>
-          <p className="mt-8 font-display text-xl text-ink/90 sm:text-2xl">
+          <p className="mt-8 min-h-[1.75rem] font-display text-xl text-ink/90 sm:text-2xl portrait:mt-5">
             <Typing words={roles} />
           </p>
-          {p.tagline && <p className="mx-auto mt-4 max-w-2xl text-muted sm:text-lg">{p.tagline}</p>}
-          <div className="mt-10">
+          {p.tagline && <p className="mx-auto mt-4 max-w-2xl text-muted sm:text-lg portrait:mt-3">{p.tagline}</p>}
+          <div className="mt-10 portrait:mt-7">
             <Actions cta={cta} resume={resume} socials={settings.socials} center />
           </div>
         </motion.div>
       </div>
       {c.showScrollHint !== false && (
-        <a href="#main-content" aria-label="Scroll down" className="absolute bottom-[11vh] left-1/2 z-20 hidden -translate-x-1/2 text-faint md:block">
+        <a href="#main-content" aria-label="Scroll down" className="absolute bottom-[11vh] left-1/2 z-20 hidden -translate-x-1/2 text-faint md:block portrait:hidden">
           <ArrowDown className="size-5 animate-bounce" aria-hidden />
         </a>
       )}

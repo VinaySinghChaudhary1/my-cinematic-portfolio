@@ -5,6 +5,13 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: 
 
 ## [Unreleased]
 
+## [1.5.1] — 2026-10-09 · Mobile cinematic hero & admin light/dark theme
+### Fixed
+- **Cinematic letterbox hero on phones and portrait tablets**: the wide hero video/photo was cropped to a thin off-centre slice (half a face). Portrait screens now show the whole frame as a “cinema screen” above the title, over a soft blurred copy; thinner letterbox bars no longer cover the buttons on small phones; only one video is ever loaded. Wide screens look exactly as before.
+- Tester login dialog padding; compact Publishing control in the entry editor.
+### Added
+- **Admin theme: Light / Dark / Auto** (follows the device) — switch in the sidebar (and a one-tap button in the mobile top bar). Remembered per browser in a cookie and rendered by the server, so there is no flash on reload. Toasts follow the theme. The public site is unchanged.
+
 ## [1.5.0] — 2026-10-05 · Access, email, drafts, PWA, bulk import & chat
 ### Added
 - **Beta testers** (Admin → Beta testers): create a login for a person (generated password shown once), send the invite by **email** or **WhatsApp** (wa.me link), expiry dates, "can see drafts", revoke / restore / new password / delete, last-seen and Google-linked status. Testers sign in at `/beta`, see the site during **maintenance** and **Beta-only sections**, and send feedback to Messages; they can never open the admin panel (separate cookie and token audience, lock-out after 8 failed logins)

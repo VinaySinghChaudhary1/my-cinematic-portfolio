@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Toaster } from "sonner";
+import { AppToaster } from "@/components/ui/AppToaster";
 import { getSettings } from "@/lib/server/content";
 import "./globals.css";
 
@@ -43,7 +43,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       {/* suppressHydrationWarning: browser extensions (e.g. Grammarly) add attributes to <body> before React loads */}
       <body suppressHydrationWarning>
         {children}
-        <Toaster theme="dark" position="bottom-right" richColors closeButton />
+        <AppToaster />
       </body>
     </html>
   );

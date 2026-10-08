@@ -1,10 +1,12 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Layers, Image as ImageIcon, Inbox, Settings, UserCog, LogOut, ExternalLink, Menu, X, Wrench, Archive, Sparkles, FlaskConical, FileUp } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import type { AdminTheme } from "@/lib/admin-theme";
+import { ThemeCycleButton, ThemeSwitch, resolveTheme, saveAdminTheme } from "./ThemeSwitch";
 
 const NAV = [
   { href: "/admin", label: "Dashboard", Icon: LayoutDashboard },
@@ -19,10 +21,33 @@ const NAV = [
   { href: "/admin/account", label: "Account & security", Icon: UserCog },
 ];
 
-export function AdminShell({ children, email, name, initials, unread, maintenance }: { children: React.ReactNode; email: string; name: string; initials: string; unread: number; maintenance: boolean }) {
+export function AdminShell({ children, email, name, initials, unread, maintenance, theme: initialTheme }: { children: React.ReactNode; email: string; name: string; initials: string; unread: number; maintenance: boolean; theme: AdminTheme }) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [theme, setTheme] = useState<AdminTheme>(initialTheme);
+  const root = useRef<HTMLDivElement>(null);
+
+  // Tell <html> which theme is showing (page background, scrollbars, toasts); follow device changes in Auto mode.
+  useEffect(() => {
+    const html = document.documentElement;
+    const apply = () => (html.dataset.adminResolved = resolveTheme(theme));
+    apply();
+    const mq = window.matchMedia("(prefers-color-scheme: light)");
+    mq.addEventListener("change", apply);
+    return () => {
+      mq.removeEventListener("change", apply);
+      delete html.dataset.adminResolved;
+    };
+  }, [theme]);
+
+  function changeTheme(t: AdminTheme) {
+    const el = root.current;
+    el?.classList.add("theme-anim");
+    setTheme(t);
+    saveAdminTheme(t);
+    window.setTimeout(() => el?.classList.remove("theme-anim"), 350);
+  }
 
   async function logout() {
     setBusy(true);
@@ -66,6 +91,9 @@ export function AdminShell({ children, email, name, initials, unread, maintenanc
         </Link>
       ))}
       <div className="mt-auto space-y-1 border-t border-line pt-3">
+        <div className="px-1 pb-2">
+          <ThemeSwitch value={theme} onChange={changeTheme} />
+        </div>
         <a href="/" target="_blank" rel="noopener" className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted hover:bg-white/[0.04] hover:text-ink">
           <ExternalLink className="size-4" aria-hidden /> View website
         </a>
@@ -80,13 +108,16 @@ export function AdminShell({ children, email, name, initials, unread, maintenanc
   );
 
   return (
-    <div className="min-h-dvh bg-[#07060f] lg:grid lg:grid-cols-[260px_1fr]">
+    <div ref={root} data-admin-theme={theme} className="min-h-dvh text-ink lg:grid lg:grid-cols-[260px_1fr]">
       <aside className="sticky top-0 hidden h-dvh border-r border-line bg-bg lg:block">{nav}</aside>
       <div className="sticky top-0 z-40 flex items-center justify-between border-b border-line bg-bg/90 px-4 py-3 backdrop-blur lg:hidden">
         <span className="font-display text-sm font-semibold">Admin</span>
-        <button onClick={() => setOpen(true)} aria-label="Open admin menu" aria-expanded={open} className="grid size-10 place-items-center rounded-lg border border-line">
-          <Menu className="size-5" />
-        </button>
+        <span className="flex items-center gap-2">
+          <ThemeCycleButton value={theme} onChange={changeTheme} />
+          <button onClick={() => setOpen(true)} aria-label="Open admin menu" aria-expanded={open} className="grid size-10 place-items-center rounded-lg border border-line">
+            <Menu className="size-5" />
+          </button>
+        </span>
       </div>
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Admin menu">

@@ -27,7 +27,7 @@
 
 | | |
 |---|---|
-| **Version** | `v1.5.0` — personal content · Backup & Restore · deploy anywhere · AI assistant · **beta testers, Google sign-in, password reset & email alerts, drafts & scheduling, installable app, bulk import, “Ask about me” chat** ✅ |
+| **Version** | `v1.5.1` — personal content · Backup & Restore · deploy anywhere · AI assistant · **beta testers, Google sign-in, password reset & email alerts, drafts & scheduling, installable app, bulk import, “Ask about me” chat** ✅ |
 | **Content** | Live content of Vinay Singh Chaudhary in [`content/vinay.json`](content/vinay.json) (`npm run content:apply`). New users still start from neutral demo data with `npm run setup`. |
 | **Designs** | **43 layouts** across 13 sections — switch any section's design from the admin, preview before saving |
 | **Quality** | TypeScript ✔ · ESLint ✔ · 55 unit tests ✔ (incl. backup → restore → undo, AI adapters & safety) · production build ✔ · every layout checked at 390 / 768 / 1440 px ✔ |
