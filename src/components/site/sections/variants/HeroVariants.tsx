@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 import { ArrowUpRight, Download, MapPin, ArrowDown } from "lucide-react";
 import { SocialLinks } from "@/components/ui/SocialIcon";
-import { arr, str } from "@/lib/utils";
+import { arr, num, str } from "@/lib/utils";
 import { Typing } from "../Hero";
 import type { SectionProps } from "../types";
 
@@ -261,8 +261,10 @@ function usePortrait() {
 
 /**
  * Wide screens: full-bleed video behind a giant title, between letterbox bars.
- * Portrait screens (phones, upright tablets): a wide video cropped to a tall screen only shows a slice of it, so the
- * whole frame is shown as a "cinema screen" above the title, over a soft blurred copy of itself.
+ * Portrait screens (phones, upright tablets), chosen in the admin (config.mobileStyle):
+ *  - "cover" (default): the same full-bleed background as on a laptop, panned to config.mobileFocusX (% from the left)
+ *    so the subject stays in view instead of an off-centre slice;
+ *  - "frame": the whole wide frame as a "cinema screen" above the title, over a soft blurred copy of itself.
  * Only one <video> is ever mounted (chosen after hydration); the poster image covers the first paint on every screen.
  */
 export function HeroCinematic(props: SectionProps) {
@@ -273,6 +275,9 @@ export function HeroCinematic(props: SectionProps) {
   const video = str(c.backgroundVideo);
   const poster = str(c.videoPoster) || photo;
   const playVideo = !!video && !reduce;
+  const framed = c.mobileStyle === "frame";
+  const focusX = Math.min(100, Math.max(0, num(c.mobileFocusX, 55)));
+  const tallPos = { objectPosition: `${focusX}% 22%` };
   const ease = [0.16, 1, 0.3, 1] as const;
   return (
     <section
@@ -291,9 +296,17 @@ export function HeroCinematic(props: SectionProps) {
         ) : (
           <img src={poster} alt="" className="absolute inset-0 size-full object-cover object-top opacity-40 blur-[2px] grayscale-[30%] portrait:hidden" />
         )}
-        {/* portrait screens: soft ambient glow made from the same picture */}
-        <img src={poster} alt="" className="absolute inset-0 hidden size-full scale-125 object-cover opacity-30 blur-2xl portrait:block" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_10%,var(--color-bg)_75%)] portrait:bg-[radial-gradient(ellipse_at_50%_30%,transparent_0%,var(--color-bg)_80%)]" />
+        {framed ? (
+          /* portrait screens, framed style: soft ambient glow made from the same picture */
+          <img src={poster} alt="" className="absolute inset-0 hidden size-full scale-125 object-cover opacity-30 blur-2xl portrait:block" />
+        ) : (
+          /* portrait screens, full background: like a laptop, panned to keep the subject in view */
+          <div className={`absolute inset-0 hidden portrait:block ${playVideo ? "opacity-55" : "opacity-40"}`}>
+            <img src={poster} alt="" style={tallPos} className="absolute inset-0 size-full object-cover" />
+            {playVideo && portrait === true && <video style={tallPos} className="absolute inset-0 size-full object-cover" src={video} poster={poster} autoPlay muted loop playsInline preload="metadata" />}
+          </div>
+        )}
+        <div className={`absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_10%,var(--color-bg)_75%)] ${framed ? "portrait:bg-[radial-gradient(ellipse_at_50%_30%,transparent_0%,var(--color-bg)_80%)]" : "portrait:bg-[radial-gradient(ellipse_at_50%_35%,transparent_15%,var(--color-bg)_95%)]"}`} />
         <div className="absolute inset-0 bg-gradient-to-b from-bg/40 via-bg/30 to-bg" />
       </motion.div>
 
@@ -302,7 +315,8 @@ export function HeroCinematic(props: SectionProps) {
       <motion.div aria-hidden className="absolute inset-x-0 bottom-0 z-10 h-[9vh] bg-black portrait:h-[4svh]" initial={reduce ? false : { y: "100%" }} animate={{ y: 0 }} transition={{ duration: 1.1, ease: [0.76, 0, 0.24, 1] }} />
 
       <div className="container-x relative z-20 w-full py-32 text-center portrait:pb-[calc(4svh+2.5rem)] portrait:pt-[calc(4svh+4.75rem)] [@media(max-height:520px)_and_(orientation:landscape)]:py-20">
-        {/* portrait screens: the whole frame, like a cinema screen */}
+        {/* portrait screens, framed style: the whole frame, like a cinema screen */}
+        {framed && (
         <motion.figure
           aria-hidden
           className="relative mx-auto mb-7 hidden w-full max-w-2xl overflow-hidden rounded-2xl border border-white/10 bg-bg-2 shadow-[0_30px_80px_-30px_var(--accent)] portrait:block"
@@ -311,12 +325,13 @@ export function HeroCinematic(props: SectionProps) {
           transition={{ duration: 1.4, delay: 0.3, ease }}
         >
           <img src={poster} alt="" className="block h-auto w-full" />
-          {playVideo && portrait === true && (
+          {playVideo && portrait === true && framed && (
             <video className="absolute inset-0 size-full object-cover" src={video} poster={poster} autoPlay muted loop playsInline preload="metadata" />
           )}
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-bg/70 via-transparent to-transparent" />
           <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/10" />
         </motion.figure>
+        )}
 
         <motion.p initial={reduce ? false : { opacity: 0, letterSpacing: "0.8em" }} animate={{ opacity: 1, letterSpacing: "0.32em" }} transition={{ duration: 1.6, delay: 0.6 }} className="font-mono text-xs uppercase text-accent-2 sm:text-sm">
           {p.headline || str(c.greeting) || "Presenting"}

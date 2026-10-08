@@ -76,8 +76,17 @@ export const SECTION_TYPES: Record<string, SectionTypeDef> = {
       { name: "showScrollHint", label: "Show scroll hint", type: "boolean" },
       { name: "backgroundVideo", label: "Background video (MP4)", type: "file", help: "Used by the Cinematic layout. Short, muted, ~1–3 MB. Falls back to the first portrait photo." },
       { name: "videoPoster", label: "Video poster image", type: "image", help: "Shown while the video loads and for reduced-motion visitors." },
+      {
+        name: "mobileStyle", label: "Phones & tablets (Cinematic layout)", type: "select",
+        options: [
+          { value: "cover", label: "Full background — like on a laptop" },
+          { value: "frame", label: "Framed screen — whole video above the name" },
+        ],
+        help: "How the background video/photo is shown on upright screens.",
+      },
+      { name: "mobileFocusX", label: "Background focus on phones (%)", type: "number", min: 0, max: 100, help: "Which part of the wide video stays in view on a tall screen: 0 = left edge, 50 = centre, 100 = right edge. Put it where your face is (default 55)." },
     ],
-    defaultConfig: { greeting: "Hello, I'm", roles: [], primaryCtaLabel: "View my work", primaryCtaHref: "#projects", showResumeButton: true, show3D: true, portraitImages: [], showScrollHint: true },
+    defaultConfig: { greeting: "Hello, I'm", roles: [], primaryCtaLabel: "View my work", primaryCtaHref: "#projects", showResumeButton: true, show3D: true, portraitImages: [], showScrollHint: true, mobileStyle: "cover", mobileFocusX: 55 },
   },
   about: {
     type: "about",

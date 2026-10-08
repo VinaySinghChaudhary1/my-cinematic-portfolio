@@ -7,7 +7,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: 
 
 ## [1.5.1] — 2026-10-09 · Mobile cinematic hero & admin light/dark theme
 ### Fixed
-- **Cinematic letterbox hero on phones and portrait tablets**: the wide hero video/photo was cropped to a thin off-centre slice (half a face). Portrait screens now show the whole frame as a “cinema screen” above the title, over a soft blurred copy; thinner letterbox bars no longer cover the buttons on small phones; only one video is ever loaded. Wide screens look exactly as before.
+- **Cinematic letterbox hero on phones and portrait tablets**: the wide hero video/photo was cropped to a thin off-centre slice (half a face). Upright screens now show the same full background as a laptop, panned to keep you in view (Admin → Hero → “Background focus on phones”, default 55 %), or — your choice in “Phones & tablets” — the whole video as a framed “cinema screen” above the name. Thinner letterbox bars no longer cover the buttons on small phones; only one video is ever loaded. Wide screens look exactly as before.
 - Tester login dialog padding; compact Publishing control in the entry editor.
 ### Added
 - **Admin theme: Light / Dark / Auto** (follows the device) — switch in the sidebar (and a one-tap button in the mobile top bar). Remembered per browser in a cookie and rendered by the server, so there is no flash on reload. Toasts follow the theme. The public site is unchanged.
