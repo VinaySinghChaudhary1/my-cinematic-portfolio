@@ -1,7 +1,7 @@
 import { route, json } from "@/lib/server/http";
 import { requireAdmin } from "@/lib/server/auth";
 import { rateLimit } from "@/lib/server/rate-limit";
-import { alertAddress, sendEmail, siteUrl } from "@/lib/server/email";
+import { alertAddress, sendEmail, getSiteUrl } from "@/lib/server/email";
 import { HttpError } from "@/lib/server/errors";
 
 /** Sends a test email to the alert address so you can confirm Resend + DNS are working. */
@@ -13,7 +13,7 @@ export const POST = route(async () => {
     to,
     subject: "Test email from your portfolio",
     text: "Email is working. New-message alerts, password resets and tester invites will arrive like this one.",
-    action: { label: "Open admin", url: `${siteUrl()}/admin` },
+    action: { label: "Open admin", url: `${await getSiteUrl()}/admin` },
   });
   if (!r.ok) throw new HttpError(r.skipped ? 400 : 502, r.error, "email_failed");
   return json({ ok: true, to });

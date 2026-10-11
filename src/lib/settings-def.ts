@@ -110,6 +110,13 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
     ],
   },
   {
+    key: "domain",
+    label: "Website address",
+    description:
+      "The address of this site, e.g. https://yourname.com. Used in emails, Google sign-in, the sitemap and share links. Empty = the SITE_URL set on the server. Change it after the new domain already opens this site (Admin → Move & domain → Domain checker).",
+    fields: [{ name: "siteUrl", label: "Website address", type: "url", placeholder: "https://yourname.com", help: "Only the address — no path. Not copied when you restore a backup on another site." }],
+  },
+  {
     key: "privacy",
     label: "Privacy notice",
     description:
@@ -131,6 +138,7 @@ export type SiteSettings = {
   maintenance: { enabled: boolean; message: string };
   privacy: { published: boolean; effectiveDate: string; content: string };
   notifications: { alertEmail: string; messageAlerts: boolean; includeMessage: boolean; feedbackAlerts: boolean };
+  domain: { siteUrl: string };
 };
 
 export const DEFAULT_SETTINGS: SiteSettings = {
@@ -142,4 +150,5 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   maintenance: { enabled: false, message: "We're polishing a few things. Please check back soon." },
   privacy: { published: false, effectiveDate: "", content: "" },
   notifications: { alertEmail: "", messageAlerts: true, includeMessage: true, feedbackAlerts: true },
+  domain: { siteUrl: "" },
 };

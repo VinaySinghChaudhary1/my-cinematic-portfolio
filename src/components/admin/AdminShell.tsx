@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Layers, Image as ImageIcon, Inbox, Settings, UserCog, LogOut, ExternalLink, Menu, X, Wrench, Archive, Sparkles, FlaskConical, FileUp } from "lucide-react";
+import { LayoutDashboard, Layers, Image as ImageIcon, Inbox, Settings, UserCog, LogOut, ExternalLink, Menu, X, Wrench, Archive, Sparkles, FlaskConical, FileUp, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { AdminTheme } from "@/lib/admin-theme";
@@ -18,6 +18,7 @@ const NAV = [
   { href: "/admin/testers", label: "Beta testers", Icon: FlaskConical },
   { href: "/admin/ai", label: "AI assistant", Icon: Sparkles },
   { href: "/admin/backups", label: "Backups", Icon: Archive },
+  { href: "/admin/move", label: "Move & domain", Icon: Globe },
   { href: "/admin/account", label: "Account & security", Icon: UserCog },
 ];
 

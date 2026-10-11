@@ -349,7 +349,7 @@ function selectContent(archive: ReadArchive, scope: RestoreScope) {
   const raw = archive.content ?? {};
   const sections = Array.isArray(raw.sections) ? (raw.sections as Record<string, unknown>[]) : [];
   return {
-    settings: scope.settings && raw.settings ? Object.fromEntries(Object.entries(raw.settings).filter(([k]) => GROUP_KEYS.has(k) && k !== "maintenance")) : undefined,
+    settings: scope.settings && raw.settings ? Object.fromEntries(Object.entries(raw.settings).filter(([k]) => GROUP_KEYS.has(k) && k !== "maintenance" && k !== "domain")) : undefined,
     sections: scope.sections === "all" ? sections : sections.filter((s) => (scope.sections as string[]).includes(String(s.key))),
   };
 }

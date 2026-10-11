@@ -113,10 +113,17 @@ Server-side backup copies live on the same host. **Download one now and then** (
 
 ## Moving to another host
 
-1. Old site: Admin → Backups → Create backup → **Download** (with password).
-2. New host: deploy the code (any section above) with `ADMIN_EMAIL` / `ADMIN_PASSWORD`.
-3. New site: Admin → Backups → **Restore from a file** → enter the password → preview → Restore.
-   Uploaded files are re-uploaded to the new storage and every link in your content is updated automatically.
+Everything is done from **Admin → Move & domain** — the code never changes.
+
+1. Pick the new host on that page: it lists the steps and the environment variables (download the `.env` template; type secrets straight into the host's settings).
+2. Deploy the code on the new host with a new, empty database and `ADMIN_EMAIL` / `ADMIN_PASSWORD`. Use the same `AUTH_SECRET` if you want saved AI keys to keep working.
+3. **Old site** → Move & domain → *Create transfer code* (asks your admin password; valid 2 hours).
+4. **New site** → Move & domain → *Receive*: paste the old site's address and the code → *Copy the old site here*.
+5. New site → Backups → newest entry “Moved from …” → preview → **Restore** (can be undone).
+6. Add your domain in the new host, change DNS at the registrar, and wait until the **Domain checker** shows “Opens THIS site”.
+7. Set **Website address** on the new site, then update Google Cloud (origin + redirect URI) and Resend if the domain changed.
+
+The old site must run v1.6 or later to send a transfer. Older versions: Backups → Create backup → **Download** (with password), then on the new site Backups → **Restore from a file**. Uploaded files are re-uploaded to the new storage and every link in your content is updated automatically.
 
 ## Pre-launch checklist
 

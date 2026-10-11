@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { AppToaster } from "@/components/ui/AppToaster";
 import { getSettings } from "@/lib/server/content";
+import { pickSiteUrl } from "@/lib/site-url";
 import "./globals.css";
 
 export const dynamic = "force-dynamic";
@@ -10,7 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
     const s = await getSettings();
     const title = s.seo.title || `${s.profile.name} — Portfolio`;
     const description = s.seo.description || s.profile.tagline;
-    const base = process.env.SITE_URL || "http://localhost:3000";
+    const base = pickSiteUrl(s.domain?.siteUrl, process.env.SITE_URL);
     return {
       metadataBase: new URL(base),
       title: { default: title, template: `%s · ${s.profile.name}` },

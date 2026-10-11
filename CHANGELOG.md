@@ -5,6 +5,13 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: 
 
 ## [Unreleased]
 
+## [1.6.0] — 2026-10-12 · Move & domain (change host or domain from the admin)
+### Added
+- **Website address in the admin** (Move & domain → Website address): emails, Google sign-in, the sitemap, robots.txt and share links use it immediately — no code change or redeploy. `SITE_URL` is now only the fallback. Only https addresses are accepted; it is never overwritten by restoring a backup.
+- **Move & domain page** (Admin → Move & domain): shows where this site runs (host, database, file storage, email, Google), and step-by-step plans for Vercel, a VPS, Docker, Hostinger, Render/Railway/Fly.io and Netlify, with the exact environment variables each needs and a downloadable `.env` template (secret values always left blank).
+- **Copy the whole site to a new host with a transfer code**: the old site makes a backup sealed with a one-time 24-character code (valid 2 hours, one at a time, cancellable, admin password required); the new site pulls it server-to-server in 4 MB parts and stores it as a backup to preview and restore (with Undo). Passwords, AI keys and testers are never copied. The new site refuses to pull from itself.
+- **Domain checker**: live DNS (A/AAAA/CNAME, www), HTTPS, “opens THIS site” (via a per-database fingerprint in `/api/health`), Resend records (DKIM, send, DMARC) and the Google sign-in addresses to add — with a fix for each problem.
+
 ## [1.5.1] — 2026-10-09 · Mobile cinematic hero & admin light/dark theme
 ### Fixed
 - **Cinematic letterbox hero on phones and portrait tablets**: the wide hero video/photo was cropped to a thin off-centre slice (half a face). Upright screens now show the same full background as a laptop, panned to keep you in view (Admin → Hero → “Background focus on phones”, default 55 %), or — your choice in “Phones & tablets” — the whole video as a framed “cinema screen” above the name. Thinner letterbox bars no longer cover the buttons on small phones; only one video is ever loaded. Wide screens look exactly as before.

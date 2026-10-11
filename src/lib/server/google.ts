@@ -7,13 +7,13 @@
  */
 import { createHash, randomBytes } from "node:crypto";
 import { createRemoteJWKSet, jwtVerify } from "jose";
-import { siteUrl } from "./email";
+import { getSiteUrl } from "./email";
 
 export const OAUTH_COOKIE = "pf_oauth";
 const JWKS = createRemoteJWKSet(new URL("https://www.googleapis.com/oauth2/v3/certs"));
 
 export const googleConfigured = () => !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
-export const googleRedirectUri = () => `${siteUrl()}/api/auth/google/callback`;
+export const googleRedirectUri = async () => `${await getSiteUrl()}/api/auth/google/callback`;
 
 export type OAuthIntent = "admin" | "link" | "tester";
 
@@ -23,11 +23,11 @@ export function newOAuthState() {
   return { state: b(24), nonce: b(24), verifier, challenge: createHash("sha256").update(verifier).digest("base64url") };
 }
 
-export function googleAuthorizeUrl(p: { state: string; nonce: string; challenge: string; loginHint?: string }) {
+export async function googleAuthorizeUrl(p: { state: string; nonce: string; challenge: string; loginHint?: string }) {
   const u = new URL("https://accounts.google.com/o/oauth2/v2/auth");
   u.search = new URLSearchParams({
     client_id: process.env.GOOGLE_CLIENT_ID!,
-    redirect_uri: googleRedirectUri(),
+    redirect_uri: await googleRedirectUri(),
     response_type: "code",
     scope: "openid email profile",
     state: p.state,
@@ -55,7 +55,7 @@ export async function exchangeGoogleCode(code: string, verifier: string, nonce: 
       code_verifier: verifier,
       client_id: process.env.GOOGLE_CLIENT_ID!,
       client_secret: process.env.GOOGLE_CLIENT_SECRET!,
-      redirect_uri: googleRedirectUri(),
+      redirect_uri: await googleRedirectUri(),
       grant_type: "authorization_code",
     }),
     signal: AbortSignal.timeout(15_000),

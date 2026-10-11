@@ -246,7 +246,7 @@ describe("Google sign-in", () => {
     const { newOAuthState, googleAuthorizeUrl, googleConfigured } = await import("@/lib/server/google");
     expect(googleConfigured()).toBe(true);
     const s = newOAuthState();
-    const u = new URL(googleAuthorizeUrl({ state: s.state, nonce: s.nonce, challenge: s.challenge }));
+    const u = new URL(await googleAuthorizeUrl({ state: s.state, nonce: s.nonce, challenge: s.challenge }));
     expect(u.searchParams.get("scope")).toBe("openid email profile");
     expect(u.searchParams.get("code_challenge_method")).toBe("S256");
     expect(u.searchParams.get("redirect_uri")).toBe("https://example.test/api/auth/google/callback");

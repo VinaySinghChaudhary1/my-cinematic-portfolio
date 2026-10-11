@@ -8,7 +8,7 @@ import { audit, hashPassword } from "@/lib/server/auth";
 import { consumeToken, peekResetToken } from "@/lib/server/tokens";
 import { HttpError } from "@/lib/server/errors";
 import { passwordSchema } from "@/lib/validation";
-import { sendEmail, siteUrl } from "@/lib/server/email";
+import { sendEmail, getSiteUrl } from "@/lib/server/email";
 
 const body = z
   .object({ token: z.string().max(200), password: passwordSchema, confirmPassword: z.string().max(200) })
@@ -25,7 +25,7 @@ export const POST = route(async (req) => {
   if (!(await consumeToken(tok.id))) throw new HttpError(400, "This reset link was already used.", "invalid_token");
 
   let to = "";
-  let loginUrl = `${siteUrl()}/admin/login`;
+  let loginUrl = `${await getSiteUrl()}/admin/login`;
   if (tok.kind === "admin") {
     const [u] = await db.select().from(schema.users).where(eq(schema.users.id, tok.subjectId)).limit(1);
     if (!u) throw new HttpError(400, "This account no longer exists.", "invalid_token");
@@ -38,7 +38,7 @@ export const POST = route(async (req) => {
     await db.update(schema.testers).set({ passwordHash: hash, sessionVersion: t.sessionVersion + 1, failedAttempts: 0, lockedUntil: null }).where(eq(schema.testers.id, t.id));
     await audit(null, "tester_password_reset", t.username, ip);
     to = t.email;
-    loginUrl = `${siteUrl()}/beta`;
+    loginUrl = `${await getSiteUrl()}/beta`;
   }
   if (to)
     after(() =>

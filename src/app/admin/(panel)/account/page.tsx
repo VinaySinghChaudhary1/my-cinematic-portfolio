@@ -5,7 +5,7 @@ import { PageHeader, Card } from "@/components/admin/ui";
 import { AccountForms } from "@/components/admin/AccountForms";
 import { AccountExtras } from "@/components/admin/AccountExtras";
 import { googleConfigured } from "@/lib/server/google";
-import { alertAddress, emailConfigured } from "@/lib/server/email";
+import { alertAddress, emailConfigured, getSiteUrl } from "@/lib/server/email";
 
 const LABEL: Record<string, string> = {
   login: "Signed in",
@@ -45,7 +45,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
       <AccountExtras
         notice={sp.google}
         google={{ configured: googleConfigured(), linkedEmail: user.googleEmail }}
-        email={{ configured: emailConfigured(), alertTo: (await alertAddress()) || user.email, from: process.env.EMAIL_FROM || "noreply@" + (process.env.SITE_URL ? new URL(process.env.SITE_URL).hostname.replace(/^www\./, "") : "your-domain") }}
+        email={{ configured: emailConfigured(), alertTo: (await alertAddress()) || user.email, from: process.env.EMAIL_FROM || "noreply@" + new URL(await getSiteUrl()).hostname.replace(/^www\./, "") }}
       />
       <Card className="mt-6">
         <h2 className="font-display text-lg font-semibold text-ink">Recent activity</h2>

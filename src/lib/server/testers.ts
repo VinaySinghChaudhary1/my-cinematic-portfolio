@@ -3,7 +3,7 @@ import { randomInt } from "node:crypto";
 import { db, schema } from "@/db";
 import type { TesterRow } from "@/db/schema";
 import { getSettings } from "./content";
-import { sendEmail, siteUrl, type EmailResult } from "./email";
+import { sendEmail, getSiteUrl, type EmailResult } from "./email";
 import { testerStatus } from "./tester-auth";
 
 const ALPHA = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789";
@@ -56,7 +56,7 @@ export async function inviteText(t: TesterRow, password: string) {
   const until = t.expiresAt ? new Date(t.expiresAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "";
   return [
     `Hi ${t.name}! You're invited to beta-test ${site} before it goes public.`,
-    `Open: ${siteUrl()}/beta`,
+    `Open: ${await getSiteUrl()}/beta`,
     `Username: ${t.username}`,
     `Password: ${password}`,
     until ? `Access until: ${until}.` : "Access: until I end the beta.",
@@ -76,6 +76,6 @@ export async function emailInvite(t: TesterRow, password: string): Promise<Email
     to: t.email,
     subject: `Your beta access to ${s.profile.name || "the portfolio"}`,
     text: await inviteText(t, password),
-    action: { label: "Open the beta", url: `${siteUrl()}/beta` },
+    action: { label: "Open the beta", url: `${await getSiteUrl()}/beta` },
   });
 }

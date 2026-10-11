@@ -33,5 +33,5 @@ export async function GET(req: NextRequest) {
     path: "/api/auth/google",
     maxAge: 600,
   });
-  return NextResponse.redirect(googleAuthorizeUrl(s));
+  return NextResponse.redirect(await googleAuthorizeUrl(s));
 }

@@ -1,10 +1,11 @@
 export const dynamic = "force-dynamic";
 import type { MetadataRoute } from "next";
 import { getPublicSite, projectSlug } from "@/lib/server/content";
+import { pickSiteUrl } from "@/lib/site-url";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = process.env.SITE_URL || "http://localhost:3000";
   const { sections, settings } = await getPublicSite();
+  const base = pickSiteUrl(settings.domain?.siteUrl, process.env.SITE_URL);
   const projects = sections.filter((s) => s.type === "projects").flatMap((s) => s.items);
   return [
     { url: base, changeFrequency: "weekly", priority: 1 },

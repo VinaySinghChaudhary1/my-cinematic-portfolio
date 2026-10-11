@@ -1,6 +1,6 @@
 /** Fire-and-forget email notifications to the site owner. Called inside `after()` so visitors never wait. */
 import { getSettings } from "../content";
-import { alertAddress, sendEmail, siteUrl } from "../email";
+import { alertAddress, sendEmail, getSiteUrl } from "../email";
 
 export async function notifyNewMessage(m: { name: string; email: string; subject: string; body: string }) {
   const s = await getSettings();
@@ -15,7 +15,7 @@ export async function notifyNewMessage(m: { name: string; email: string; subject
     subject: `New message from ${m.name}${m.subject ? ` — ${m.subject}` : ""}`.slice(0, 150),
     text: lines.filter(Boolean).join("\n\n"),
     replyTo: m.email,
-    action: { label: "Open inbox", url: `${siteUrl()}/admin/messages` },
+    action: { label: "Open inbox", url: `${await getSiteUrl()}/admin/messages` },
   });
 }
 
@@ -28,6 +28,6 @@ export async function notifyFeedback(f: { tester: string; page: string; body: st
     to,
     subject: `Beta feedback from ${f.tester}`,
     text: `${f.tester} sent feedback${f.page ? ` from ${f.page}` : ""}:\n\n${f.body}`,
-    action: { label: "Open inbox", url: `${siteUrl()}/admin/messages` },
+    action: { label: "Open inbox", url: `${await getSiteUrl()}/admin/messages` },
   });
 }

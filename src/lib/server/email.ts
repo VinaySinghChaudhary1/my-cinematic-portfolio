@@ -5,6 +5,7 @@
  * The domain in EMAIL_FROM must be verified in Resend (DNS records), otherwise Resend refuses the send.
  */
 import { getSettings } from "./content";
+import { pickSiteUrl } from "@/lib/site-url";
 
 export interface EmailInput {
   to: string | string[];
@@ -21,15 +22,16 @@ export function emailConfigured() {
   return !!process.env.RESEND_API_KEY;
 }
 
-export function siteUrl(): string {
-  return (process.env.SITE_URL || "http://localhost:3000").replace(/\/+$/, "");
+/** This site's address (Admin → Site settings → Website address, else SITE_URL). */
+export async function getSiteUrl(): Promise<string> {
+  return pickSiteUrl((await getSettings()).domain?.siteUrl, process.env.SITE_URL);
 }
 
 async function fromAddress(): Promise<string> {
   if (process.env.EMAIL_FROM) return process.env.EMAIL_FROM;
   let host = "localhost";
   try {
-    host = new URL(siteUrl()).hostname.replace(/^www\./, "");
+    host = new URL(await getSiteUrl()).hostname.replace(/^www\./, "");
   } catch {
     /* default */
   }
@@ -39,7 +41,7 @@ async function fromAddress(): Promise<string> {
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
-export function renderEmailHtml(i: Pick<EmailInput, "subject" | "text" | "action">, siteName: string): string {
+export function renderEmailHtml(i: Pick<EmailInput, "subject" | "text" | "action">, siteName: string, site = ""): string {
   const paras = i.text
     .split(/\n{2,}/)
     .map((p) => `<p style="margin:0 0 14px;line-height:1.55">${esc(p).replace(/\n/g, "<br>")}</p>`)
@@ -51,7 +53,7 @@ export function renderEmailHtml(i: Pick<EmailInput, "subject" | "text" | "action
 <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:14px;padding:28px;border:1px solid #e9e5ff">
 <div style="font-size:12px;letter-spacing:.14em;color:#7c3aed;font-weight:700;margin-bottom:10px">${esc(siteName.toUpperCase())}</div>
 <h1 style="font-size:20px;margin:0 0 16px">${esc(i.subject)}</h1>${paras}${button}
-</div><p style="text-align:center;font-size:11px;color:#9ca3af;margin-top:14px">${esc(siteUrl())}</p></body></html>`;
+</div><p style="text-align:center;font-size:11px;color:#9ca3af;margin-top:14px">${esc(site)}</p></body></html>`;
 }
 
 /** Sends an email. Never throws — returns a result the caller can show or log. */
@@ -71,7 +73,7 @@ export async function sendEmail(i: EmailInput): Promise<EmailResult> {
         to: [i.to].flat(),
         subject: i.subject.slice(0, 200),
         text: i.action ? `${i.text}\n\n${i.action.label}: ${i.action.url}` : i.text,
-        html: renderEmailHtml(i, siteName),
+        html: renderEmailHtml(i, siteName, await getSiteUrl()),
         ...(i.replyTo ? { reply_to: i.replyTo } : {}),
       }),
       signal: AbortSignal.timeout(15_000),

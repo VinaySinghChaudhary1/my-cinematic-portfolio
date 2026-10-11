@@ -7,7 +7,7 @@ import { rateLimit } from "@/lib/server/rate-limit";
 import { audit } from "@/lib/server/auth";
 import { createResetToken, RESET_TTL_MS } from "@/lib/server/tokens";
 import { findTesterByLogin, testerStatus } from "@/lib/server/tester-auth";
-import { sendEmail, siteUrl } from "@/lib/server/email";
+import { sendEmail, getSiteUrl } from "@/lib/server/email";
 
 const body = z.object({ email: z.string().trim().max(200), kind: z.enum(["admin", "tester"]).default("admin") });
 
@@ -46,7 +46,7 @@ export const POST = route(async (req) => {
         to,
         subject: "Reset your password",
         text: `Someone (hopefully you) asked to reset the password for ${to}.\n\nThe link works once and expires in ${RESET_TTL_MS / 60_000} minutes. If you didn't ask for this, ignore this email — your password stays the same.`,
-        action: { label: "Choose a new password", url: `${siteUrl()}/auth/reset?token=${token}` },
+        action: { label: "Choose a new password", url: `${await getSiteUrl()}/auth/reset?token=${token}` },
       });
     } catch (e) {
       console.error("[forgot] failed", e);
